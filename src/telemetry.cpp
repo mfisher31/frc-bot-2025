@@ -1,5 +1,7 @@
-#include "Telemetry.h"
+
 #include <frc/smartdashboard/SmartDashboard.h>
+
+#include "telemetry.hpp"
 
 using namespace ctre::phoenix6;
 

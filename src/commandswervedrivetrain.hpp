@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ctre/phoenix6/SignalLogger.hpp"
+#include <ctre/phoenix6/SignalLogger.hpp>
 
 #include <frc/DriverStation.h>
 #include <frc/Notifier.h>
@@ -8,7 +8,7 @@
 #include <frc2/command/SubsystemBase.h>
 #include <frc2/command/sysid/SysIdRoutine.h>
 
-#include "generated/TunerConstants.h"
+#include "tunerconstants.hpp"
 
 using namespace ctre::phoenix6;
 
