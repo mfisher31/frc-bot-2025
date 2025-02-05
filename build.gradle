@@ -99,3 +99,14 @@ model {
         }
     }
 }
+
+ task clangFormat {
+     doLast {
+         exec {
+             workingDir "${projectDir}"
+             executable 'python3'
+             args "${projectDir}/util/format.py"
+         }
+     }
+ }
+ 
