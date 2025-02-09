@@ -56,3 +56,16 @@ If it gives problems, cleaning the project could help. The `--info` option could
 ./gradlew clean
 ./gradlew deploy --info
 ```
+
+## Meson
+The firmware for desktop/simulator can be built with meson.  You must first compile wpilib using cmake and install to the system before this will work.
+
+```
+meson setup build-meson
+ninja -C build-meson -j4
+```
+
+And to run it, use the launcher script
+```
+sh util/simulate.sh
+```
