@@ -57,8 +57,22 @@ If it gives problems, cleaning the project could help. The `--info` option could
 ./gradlew deploy --info
 ```
 
+
+## Meson
+The firmware for desktop/simulator can be built with meson.  You must first compile wpilib using cmake and install to the system before this will work.
+
+```
+meson setup build-meson
+ninja -C build-meson -j4
+```
+
+And to run it, use the launcher script
+```
+sh util/simulate.sh
+```
+
 ## WPILib CMake Build
-Do this to compile wpilib with cmake. It is needed for meson to build the simulator.
+allwpilib should compile as a subproject, but if it is failing then you should compile wpilib with cmake and install it. It is needed for meson to build the simulator.
 ```
 # Clone the repository.
 git clone https://github.com/wpilibsuite/allwpilib
@@ -80,17 +94,4 @@ ninja -j4
 Then install it
 ```
 sudo ninja install
-```
-
-## Meson
-The firmware for desktop/simulator can be built with meson.  You must first compile wpilib using cmake and install to the system before this will work.
-
-```
-meson setup build-meson
-ninja -C build-meson -j4
-```
-
-And to run it, use the launcher script
-```
-sh util/simulate.sh
 ```
