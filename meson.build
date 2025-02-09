@@ -10,21 +10,12 @@ project ('frc-bot-2025', ['cpp', 'c'],
     ])
 
 fs = import ('fs')
+cmake = import('cmake')
 
 c = meson.get_compiler ('c')
 cpp = meson.get_compiler ('cpp')
 
 boost_dep = dependency ('boost', required : false)
-
-hal_dep      = dependency ('hal', method: 'cmake', required: true)
-ntcore_dep   = dependency ('ntcore', method: 'cmake', required: true)
-wpiutil_dep  = dependency ('wpiutil', method: 'cmake', required: true)
-wpimath_dep  = dependency ('wpimath', method: 'cmake', required: true)
-wpilibc_dep  = dependency ('wpilibc', method: 'cmake', required: true)
-apriltag_dep = dependency ('apriltag', method: 'cmake', required: true)
-cameraserver_dep = dependency ('cameraserver', method: 'cmake', required: true)
-cscore_dep   = dependency ('cscore', method: 'cmake', required: true)
-newcommands_dep = dependency ('wpilibnewcommands', method: 'cmake', required: true)
 
 # TODO: these should be dynamic and/or option-ized
 frc_platform = 'linuxx86-64'
@@ -32,6 +23,9 @@ frc_buildtype = 'release'
 frc_libdir = meson.project_source_root() / 'build/install/frcUserProgram/linuxx86-64/release/lib'
 frc_is_sim = true
 
+subdir ('meson/allwpilib')
+
+# Phoenix 6
 phoenix6libs = []
 phoenix6_sonames = '''
     CTRE_SimVictorSPX
@@ -58,7 +52,16 @@ phoenix6_dep = declare_dependency (
     dependencies: phoenix6libs
 )
 
-wpilib_deps = [ wpilibc_dep, newcommands_dep, phoenix6_dep ]
+wpilib_deps += phoenix6_dep
 
+# Firmware
 subdir ('src')
-subdir ('test')
+
+# Tests
+if boost_dep.found()
+    subdir ('test')
+endif
+
+summary ('Build type', frc_buildtype)
+summary ('Simulator', frc_is_sim)
+summary ('Tests', boost_dep.found())
