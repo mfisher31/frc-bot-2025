@@ -95,3 +95,15 @@ Then install it
 ```
 sudo ninja install
 ```
+## Meson and the RIO
+This build is a work in progress.
+
+### Acquire Shared Libraries
+Gradle does not make it easy to utilize built artifacts externally. Thankfully, there is a task which will stage these libraries for us in the build-tree.
+
+```
+./gradlew installFrcUserProgramLinuxathenaReleaseExecutable --max-workers=2
+```
+
+### Setup and Build
+TODO
