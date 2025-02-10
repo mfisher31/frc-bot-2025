@@ -107,3 +107,10 @@ Gradle does not make it easy to utilize built artifacts externally. Thankfully, 
 
 ### Setup and Build
 TODO
+
+### Docker
+In case its needed
+```
+docker pull ghcr.io/snidercs/bot-2024:1.0
+docker tag ghcr.io/snidercs/bot-2024:1.0 snidercs/bot-2024
+```

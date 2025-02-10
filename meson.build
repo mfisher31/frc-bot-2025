@@ -18,38 +18,44 @@ cpp = meson.get_compiler ('cpp')
 boost_dep = dependency ('boost', required : false)
 
 # TODO: these should be dynamic and/or option-ized
-frc_platform = 'linuxx86-64'
+frc_is_sim = not meson.is_cross_build()
+frc_platform = frc_is_sim ? 'linuxx86-64' : 'linuxathena'
 frc_buildtype = 'release'
-frc_libdir = meson.project_source_root() / 'build/install/frcUserProgram/linuxx86-64/release/lib'
-frc_is_sim = true
+frc_libdir = meson.project_source_root() / 'build/install/frcUserProgram/@0@/release/lib'.format(frc_platform)
 
 subdir ('meson/allwpilib')
 
 # Phoenix 6
-phoenix6libs = []
-phoenix6_sonames = '''
-    CTRE_SimVictorSPX
-    CTRE_SimProPigeon2
-    CTRE_SimPigeonIMU
-    CTRE_SimProCANcoder
-    CTRE_SimProCANrange
-    CTRE_SimProTalonFX
-    CTRE_SimTalonSRX
-    CTRE_SimCANCoder
-'''.split()
+phoenix6_libs = []
+phoenix6_sonames = []
 
 if frc_is_sim
-    phoenix6_sonames += [ 'CTRE_Phoenix6_WPISim', 'CTRE_PhoenixTools_Sim' ]
+    phoenix6_sonames = '''
+        CTRE_SimVictorSPX
+        CTRE_SimProPigeon2
+        CTRE_SimPigeonIMU
+        CTRE_SimProCANcoder
+        CTRE_SimProCANrange
+        CTRE_SimProTalonFX
+        CTRE_SimTalonSRX
+        CTRE_SimCANCoder
+        CTRE_Phoenix6_WPISim
+        CTRE_PhoenixTools_Sim
+    '''.split()
+else
+    phoenix6_sonames = '''
+        CTRE_Phoenix6_WPI
+        CTRE_PhoenixTools
+    '''.split()
 endif
 
 foreach lib: phoenix6_sonames
-    phoenix6libs += cpp.find_library (lib, 
-        dirs: [ meson.project_source_root() / 'build/install/frcUserProgram/linuxx86-64/release/lib' ], required: true)
+    phoenix6_libs += cpp.find_library (lib, dirs: [ frc_libdir ], required: true)
 endforeach
 
 phoenix6_dep = declare_dependency (
     include_directories: fs.expanduser ('~/SDKs/include'),
-    dependencies: phoenix6libs
+    dependencies: phoenix6_libs
 )
 
 wpilib_deps += phoenix6_dep
