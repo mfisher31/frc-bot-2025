@@ -188,3 +188,4 @@ compile_commands.json
 .factorypath
 
 vendordeps/sdk/
+__pycache__
