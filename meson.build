@@ -20,11 +20,14 @@ boost_dep = dependency ('boost', required : false)
 frc_is_sim = not meson.is_cross_build()
 frc_platform = frc_is_sim ? 'linuxx86-64' : 'linuxathena'
 frc_buildtype = 'release'
-frc_libdir = meson.project_source_root() / 'build/install/frcUserProgram/@0@/release/lib'.format(frc_platform)
+frc_libdir = meson.project_source_root() / 'build/install/frcUserProgram/@0@/@1@/lib'.format(frc_platform, frc_buildtype)
 
 subdir ('meson/allwpilib')
 
-luabot_proj = subproject ('luabot', default_options: [])
+luabot_proj = subproject ('luabot', default_options: [
+   'test=@0@'.format(frc_is_sim ? 'enabled' : 'disabled'),
+    'frc-libs=@0@'.format(frc_libdir)
+])
 luabot_dep = luabot_proj.get_variable ('luabot_dep')
 
 # Phoenix 6
