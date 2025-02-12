@@ -101,6 +101,9 @@ model {
 }
 
 //==============================================================================
+
+/*
+
 // returns a directory or file within the sdk dir.
 String sdkDir(String dir = "") {
     String out = projectDir.toString()
@@ -152,6 +155,7 @@ tasks.withType(LinkExecutable).configureEach {
         linkerArgs.addAll  sdkDir('msvc/lib/lua51.lib')
     }
 }
+*/
 //==============================================================================
 
 task clangFormat {
