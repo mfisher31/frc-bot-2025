@@ -189,3 +189,4 @@ compile_commands.json
 
 vendordeps/sdk/
 __pycache__
+*.egg-info
