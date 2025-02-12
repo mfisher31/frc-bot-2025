@@ -1,0 +1,5 @@
+*
+!luabot.wrap
+!allwpilib.wrap
+!.gitignore
+!.ignore

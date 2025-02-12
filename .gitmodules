@@ -1,3 +1,0 @@
-[submodule "vendordeps/luajit"]
-	path = vendordeps/luajit
-	url = https://github.com/mfisher31/luajit

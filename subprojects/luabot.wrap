@@ -1,0 +1,4 @@
+[wrap-git]
+url =  https://github.com/snidercs/luabot
+pusl-url = git@github.com:snidercs/luabot.git
+revision = main

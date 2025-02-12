@@ -5,7 +5,6 @@ project ('frc-bot-2025', ['cpp', 'c'],
     default_options: [
         'b_ndebug=if-release',
         'buildtype=release',
-        'c_std=c99',
         'cpp_std=c++20',
     ])
 
@@ -24,6 +23,9 @@ frc_buildtype = 'release'
 frc_libdir = meson.project_source_root() / 'build/install/frcUserProgram/@0@/release/lib'.format(frc_platform)
 
 subdir ('meson/allwpilib')
+
+luabot_proj = subproject ('luabot', default_options: [])
+luabot_dep = luabot_proj.get_variable ('luabot_dep')
 
 # Phoenix 6
 phoenix6_libs = []

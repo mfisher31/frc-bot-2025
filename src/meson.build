@@ -6,6 +6,6 @@ executable ('frcUserProgram',
         telemetry.cpp
         tunerconstants.cpp
     '''.split(),
-    dependencies: [ wpilib_deps ],
+    dependencies: [ wpilib_deps, luabot_dep ],
     link_args: [  ]
 )
