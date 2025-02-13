@@ -26,11 +26,16 @@ robotpy_extras = [
 ]
 
 # Other pip packages to install
-requires = []
+requires = [
+    'limelightlib-python'
+    ]
 
 #################
 # robotpy-build #
 #################
+
+# TODO: this section isn't finished yet. It was added to have in place
+# for when we're ready.
 
 # This section tells pip to install robotpy-build before starting a build
 [build-system]
