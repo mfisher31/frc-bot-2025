@@ -3,6 +3,7 @@
 // the WPILib BSD license file in the root directory of this project.
 
 #include "robot.hpp"
+#include "lifter.hpp" // Include the Lifter header file
 
 #include <frc2/command/CommandScheduler.h>
 
@@ -19,7 +20,7 @@ void Robot::DisabledPeriodic() {}
 void Robot::DisabledExit() {}
 
 void Robot::AutonomousInit() {
-    m_autonomousCommand = m_container.GetAutonomousCommand();
+    m_autonomousCommand = m_container->GetAutonomousCommand();
 
     if (m_autonomousCommand) {
         m_autonomousCommand->Schedule();
@@ -31,13 +32,17 @@ void Robot::AutonomousPeriodic() {}
 void Robot::AutonomousExit() {}
 
 void Robot::TeleopInit() {
+    if (m_container == nullptr) {
+        m_container.reset (new RobotContainer());
+    }
     if (m_autonomousCommand) {
         m_autonomousCommand->Cancel();
     }
 }
 
 void Robot::TeleopPeriodic() {
-    m_container.drivetrain.Periodic();
+    m_container->drivetrain.Periodic();
+    m_container->lifter.Periodic(); // Call the Lifter's Periodic method
 }
 
 void Robot::TeleopExit() {
