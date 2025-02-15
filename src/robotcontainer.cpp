@@ -37,6 +37,10 @@ void RobotContainer::ConfigureBindings() {
     joystick.LeftBumper().OnTrue (drivetrain.RunOnce ([this] { drivetrain.SeedFieldCentric(); }));
 
     drivetrain.RegisterTelemetry ([this] (auto const& state) { logger.Telemeterize (state); });
+
+    // Add bindings for the lifter
+    joystick.Y().WhileTrue (frc2::cmd::Run([this] { lifter.LiftUp(); }, {&lifter}));
+    joystick.X().WhileTrue (frc2::cmd::Run([this] { lifter.LiftDown(); }, {&lifter}));
 }
 
 frc2::CommandPtr RobotContainer::GetAutonomousCommand() {

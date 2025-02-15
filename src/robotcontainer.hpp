@@ -9,6 +9,7 @@
 
 #include "commandswervedrivetrain.hpp"
 #include "telemetry.hpp"
+#include "lifter.hpp" // Include the Lifter header file
 
 class RobotContainer {
 private:
@@ -39,6 +40,7 @@ public:
     subsystems::CommandSwerveDrivetrain drivetrain {
         TunerConstants::CreateDrivetrain()
     };
+    Lifter lifter; // Instantiate the Lifter subsystem
 
     RobotContainer();
 
