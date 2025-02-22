@@ -23,8 +23,8 @@ class MyRobot(wpilib.TimedRobot):
     def robotInit(self) -> None:
         # Instantiate our RobotContainer.  This will perform all our button bindings, and put our
         # autonomous chooser on the dashboard.
-        self._scheduler = commands2.CommandScheduler.getInstance()
-        self._container = None
+        self.container = RobotContainer()
+        self.scheduler = commands2.CommandScheduler.getInstance()
 
     def robotPeriodic(self) -> None:
         """This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
@@ -37,12 +37,11 @@ class MyRobot(wpilib.TimedRobot):
         # commands, running already-scheduled commands, removing finished or interrupted commands,
         # and running subsystem periodic() methods.  This must be called from the robot's periodic
         # block in order for anything in the Command-based framework to work.
-        self._scheduler.run()
+        self.scheduler.run()
 
     def disabledInit(self) -> None:
         """This function is called once each time the robot enters Disabled mode."""
-        if self._container == None:
-            self._container = RobotContainer()
+        pass
 
     def disabledPeriodic(self) -> None:
         """This function is called periodically when disabled"""
@@ -50,7 +49,7 @@ class MyRobot(wpilib.TimedRobot):
 
     def autonomousInit(self) -> None:
         """This autonomous runs the autonomous command selected by your RobotContainer class."""
-        self.autonomousCommand = self._container.getAutonomousCommand()
+        self.autonomousCommand = self.container.getAutonomousCommand()
         if self.autonomousCommand:
             self.autonomousCommand.schedule()
 

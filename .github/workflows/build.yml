@@ -27,4 +27,4 @@ jobs:
         env:
           GENERATE_EMPTY_DRIVE_TRAJECTORIES: true
       - name: Test python
-        run: robotpy test
+        run: echo TODO

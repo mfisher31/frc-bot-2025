@@ -1,6 +1,7 @@
 executable ('frcUserProgram', 
     '''
         commandswervedrivetrain.cpp
+        lifter.cpp
         robotcontainer.cpp
         robot.cpp
         telemetry.cpp

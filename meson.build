@@ -42,6 +42,7 @@ if frc_is_sim
         CTRE_SimProCANcoder
         CTRE_SimProCANrange
         CTRE_SimProTalonFX
+        CTRE_SimProTalonFXS
         CTRE_SimTalonSRX
         CTRE_SimCANCoder
         CTRE_Phoenix6_WPISim
