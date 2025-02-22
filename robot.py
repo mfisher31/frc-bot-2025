@@ -11,24 +11,20 @@ import typing
 
 from robotcontainer import RobotContainer
 
-
-class MyRobot(commands2.TimedCommandRobot):
+# class MyRobot(commands2.TimedCommandRobot):
+class MyRobot(wpilib.TimedRobot):
     """
     Command v2 robots are encouraged to inherit from TimedCommandRobot, which
     has an implementation of robotPeriodic which runs the scheduler for you
     """
 
     autonomousCommand: typing.Optional[commands2.Command] = None
-
+    
     def robotInit(self) -> None:
-        """
-        This function is run when the robot is first started up and should be used for any
-        initialization code.
-        """
-
         # Instantiate our RobotContainer.  This will perform all our button bindings, and put our
         # autonomous chooser on the dashboard.
-        self.container = RobotContainer()
+        self._scheduler = commands2.CommandScheduler.getInstance()
+        self._container = None
 
     def robotPeriodic(self) -> None:
         """This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
@@ -41,11 +37,12 @@ class MyRobot(commands2.TimedCommandRobot):
         # commands, running already-scheduled commands, removing finished or interrupted commands,
         # and running subsystem periodic() methods.  This must be called from the robot's periodic
         # block in order for anything in the Command-based framework to work.
-        commands2.CommandScheduler.getInstance().run()
+        self._scheduler.run()
 
     def disabledInit(self) -> None:
         """This function is called once each time the robot enters Disabled mode."""
-        pass
+        if self._container == None:
+            self._container = RobotContainer()
 
     def disabledPeriodic(self) -> None:
         """This function is called periodically when disabled"""
@@ -53,8 +50,7 @@ class MyRobot(commands2.TimedCommandRobot):
 
     def autonomousInit(self) -> None:
         """This autonomous runs the autonomous command selected by your RobotContainer class."""
-        self.autonomousCommand = self.container.getAutonomousCommand()
-
+        self.autonomousCommand = self._container.getAutonomousCommand()
         if self.autonomousCommand:
             self.autonomousCommand.schedule()
 
@@ -77,3 +73,8 @@ class MyRobot(commands2.TimedCommandRobot):
     def testInit(self) -> None:
         # Cancels all running commands at the start of test mode
         commands2.CommandScheduler.getInstance().cancelAll()
+
+    def simulationInit(self) -> None:
+        pass
+    def simulationPeriodic(self) -> None:
+        pass
