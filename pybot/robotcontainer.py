@@ -27,7 +27,7 @@ class RobotContainer:
 
     def __init__(self) -> None:
         self._max_speed = (
-            TunerConstants.speed_at_12_volts
+            TunerConstants.speed_at_12_volts * .3
         )  # speed_at_12_volts desired top speed
         self._max_angular_rate = rotationsToRadians(
             0.75
@@ -107,11 +107,11 @@ class RobotContainer:
         )
 
         # reset the field-centric heading on left bumper press
-        # self._joystick.leftBumper().onTrue(
-        #     self.drivetrain.runOnce(lambda: self.drivetrain.seed_field_centric())
-        # )
+        self._joystick.leftBumper().onTrue(
+            self.drivetrain.runOnce(lambda: self.drivetrain.seed_field_centric())
+        )
 
-        self.drivetrain.seed_field_centric()
+        # self.drivetrain.runOnce(self.drivetrain.seed_field_centric())
 
         self.drivetrain.register_telemetry(
             lambda state: self._logger.telemeterize(state)
