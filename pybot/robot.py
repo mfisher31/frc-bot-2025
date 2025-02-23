@@ -65,6 +65,9 @@ class MyRobot(wpilib.TimedRobot):
         if self.autonomousCommand:
             self.autonomousCommand.cancel()
 
+        # Configure button bindings
+        self.container.configureButtonBindings()
+
     def teleopPeriodic(self) -> None:
         """This function is called periodically during operator control"""
         pass

@@ -49,12 +49,7 @@ class RobotContainer:
 
         self._logger = Telemetry(self._max_speed)
 
-        self._joystick = commands2.button.CommandXboxController(0)
-
         self.drivetrain = TunerConstants.create_drivetrain()
-
-        # Configure the button bindings
-        self.configureButtonBindings()
 
     def configureButtonBindings(self) -> None:
         """
@@ -62,6 +57,10 @@ class RobotContainer:
         instantiating a :GenericHID or one of its subclasses (Joystick or XboxController),
         and then passing it to a JoystickButton.
         """
+        if hasattr(self, '_joystick') and self._joystick is not None:
+            return
+
+        self._joystick = commands2.button.CommandXboxController(0)
 
         # Note that X is defined as forward according to WPILib convention,
         # and Y is defined as to the left according to WPILib convention.
