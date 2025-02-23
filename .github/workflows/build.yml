@@ -23,7 +23,7 @@ jobs:
       - name: Grant execute permission
         run: chmod +x gradlew
       - name: Sync python
-        run: robotpy sync
+        run: cd pybot && robotpy sync
         env:
           GENERATE_EMPTY_DRIVE_TRAJECTORIES: true
       - name: Test python
