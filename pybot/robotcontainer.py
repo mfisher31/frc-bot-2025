@@ -53,7 +53,7 @@ class RobotContainer:
         self.drivetrain = TunerConstants.create_drivetrain()
 
         # Initialize the elevator with motor IDs
-        self.elevator = Lifter([100, 200])
+        self.elevator = Lifter([20, 14])
 
         # Initialize the intake with motor IDs
         self.intake = Lifter([300, 400])
