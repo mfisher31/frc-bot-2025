@@ -3,47 +3,30 @@ from phoenix6.configs.talon_fx_configs import TalonFXConfiguration, MotorOutputC
 from phoenix6.signals import InvertedValue
 
 class Lifter:
-    def __init__(self, motor_ids):
-        self.motors = {id: talon_fx.TalonFX(id) for id in motor_ids}
-        
+    def __init__(self, left_id, right_id):
+        self.motors = [talon_fx.TalonFX(id) for id in [left_id, right_id]]
         self._configure_motors()
 
     def _configure_motors(self):
         try:
-            if 20 in self.motors.keys():
-                motor_20 = self.motors[20]
-                motor_20.configFactoryDefault()
-                config_20 = TalonFXConfiguration()
-                motor_output_config_20 = MotorOutputConfigs()
-                motor_output_config_20.inverted = InvertedValue.CLOCKWISE_POSITIVE
-                config_20.with_motor_output(motor_output_config_20)
-                motor_20.getConfigurator().apply(config_20)
-                motor_20.configPeakCurrentLimit(40)
-                config.with_motor_output(motor_output_config)
+            for motor in self.motors:
+                motor.configFactoryDefault()
+                config = TalonFXConfiguration()
+                motor_output_config = MotorOutputConfigs()
                 
-                # Apply the configuration to the motor
-                motor.getConfigurator().apply(config)
-                
+                # Set common properties
                 motor.configPeakCurrentLimit(40)
                 motor.configContinuousCurrentLimit(30)
                 motor.enableCurrentLimit(True)
-            if 14 in self.motors.keys():
-                motor_14 = self.motors[14]
-                motor_14.configFactoryDefault()
-                config_14 = TalonFXConfiguration()
-                motor_output_config_14 = MotorOutputConfigs()
-                motor_output_config_14.inverted = InvertedValue.COUNTER_CLOCKWISE_POSITIVE
-                config_14.with_motor_output(motor_output_config_14)
-                motor_14.getConfigurator().apply(config_14)
-                motor_14.configPeakCurrentLimit(40)
+                
+                # Specialize as needed
+                if motor.getDeviceID() == 20:
+                    motor_output_config.inverted = InvertedValue.CLOCKWISE_POSITIVE
+                elif motor.getDeviceID() == 14:
+                    motor_output_config.inverted = InvertedValue.COUNTER_CLOCKWISE_POSITIVE
+                
                 config.with_motor_output(motor_output_config)
-                
-                # Apply the configuration to the motor
                 motor.getConfigurator().apply(config)
-                
-                motor.configPeakCurrentLimit(40)
-                motor.configContinuousCurrentLimit(30)
-                motor.enableCurrentLimit(True)
         except Exception as e:
             pass
 
