@@ -27,13 +27,7 @@ class Lifter:
                 motor.configPeakCurrentLimit(40)
                 motor.configContinuousCurrentLimit(30)
                 motor.enableCurrentLimit(True)
-                
-                # Specialize as needed
-                #if motor.getDeviceID() == 20:
-                #motor_output_config.inverted = InvertedValue.CLOCKWISE_POSITIVE
-                #elif motor.getDeviceID() == 14:
-                #    motor_output_config.inverted = InvertedValue.COUNTER_CLOCKWISE_POSITIVE
-                
+
                 config.with_motor_output(motor_output_config)
                 motor.getConfigurator().apply(config)
         except Exception as e:
@@ -42,48 +36,42 @@ class Lifter:
     def can_run_motors(self):
         for i, motor in enumerate(self.motors):
             val = float(motor.get_position().value)
-            if val < POS_MINS[i] or val > POS_MAXES[i]:
+            if val <= POS_MINS[i] or val >= POS_MAXES[i]:
+                return False
+        return True
+    
+    def can_move_down(self):
+        for i, motor in enumerate(self.motors):
+            val = float(motor.get_position().value)
+            if val >= POS_MAXES[i]:
+                return False
+        return True
+    
+    def can_move_up(self):
+        for i, motor in enumerate(self.motors):
+            val = float(motor.get_position().value)
+            if val <= POS_MINS[i]:
                 return False
         return True
 
     def move_down(self):
         try:
-            if not self.can_run_motors():
+            if not self.can_move_down():
                 logger.warning("Motors are out of range, cannot move down")
                 return
 
-            # limit_hit = False
-            # for index, motor in enumerate(self.motors):
             for motor in self.motors:
-                #if index == 0 and float(motor.get_position().value) >= 0.3 or limit_hit:
-                #    logger.warning(f"Motor 20 passed its limit moving down")
-                #    limit_hit = True
-                #    return
-                #if index == 1 and float(motor.get_position().value) >= 1 or limit_hit:
-                #    logger.warning(f"Motor 14 passed its limit moving down")
-                #    limit_hit = True
-                #    return
                 motor.set(0.3)
         except Exception as e:
             logger.error(f"Error moving down: {e}")
 
     def move_up(self):
         try:
-            if not self.can_run_motors():
+            if not self.can_move_up():
                 logger.warning("Motors are out of range, cannot move up")
                 return
 
-            #limit_hit = False
-            #for index, motor in enumerate(self.motors):
             for motor in self.motors:
-                #if index == 0 and float(motor.get_position().value) <= -100 or limit_hit:
-                #    logger.warning(f"Motor 20 passed its limit moving up")
-                #    limit_hit = True
-                #    return
-                #if index == 1 and float(motor.get_position().value) <= -100 or limit_hit:
-                #    logger.warning(f"Motor 14 passed its limit moving up")
-                #    limit_hit = True
-                #    return
                 motor.set(-0.3)
         except Exception as e:
             logger.error(f"Error moving up: {e}")
