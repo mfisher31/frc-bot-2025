@@ -54,6 +54,14 @@ class RobotContainer:
 
         # Initialize the elevator with motor IDs
         self.elevator = Lifter(20, 14)
+        """
+        20: .18
+        14: .97
+
+
+        20: -101.67
+        14: -100.95
+        """
 
         # Initialize the intake with motor IDs
         self.intake = Lifter(300, 400)
@@ -90,14 +98,14 @@ class RobotContainer:
             )
         )
 
-        self._joystick.a().whileTrue(self.drivetrain.apply_request(lambda: self._brake))
-        self._joystick.b().whileTrue(
-            self.drivetrain.apply_request(
-                lambda: self._point.with_module_direction(
-                    Rotation2d(-self._joystick.getLeftY(), -self._joystick.getLeftX())
-                )
-            )
-        )
+        #self._joystick.a().whileTrue(self.drivetrain.apply_request(lambda: self._brake))
+        #self._joystick.b().whileTrue(
+        #    self.drivetrain.apply_request(
+        #        lambda: self._point.with_module_direction(
+        #            Rotation2d(-self._joystick.getLeftY(), -self._joystick.getLeftX())
+        #        )
+        #    )
+        #)
 
         # Run SysId routines when holding back/start and X/Y.
         # Note that each routine should be run exactly once in a single log.
@@ -115,19 +123,19 @@ class RobotContainer:
         )
 
         # reset the field-centric heading on left bumper press
-        self._joystick.leftBumper().onTrue(
+        self._joystick.leftTrigger().onTrue(
             self.drivetrain.runOnce(lambda: self.drivetrain.seed_field_centric())
         )
         
         # Configure buttons for elevator control
-        self._joystick.rightBumper().whileTrue(commands2.cmd.run(self.elevator.move_up, self.elevator))
-        self._joystick.leftTrigger().whileTrue(commands2.cmd.run(self.elevator.move_down, self.elevator))
+        self._joystick.y().whileTrue(commands2.cmd.run(self.elevator.move_up, self.elevator))
+        self._joystick.a().whileTrue(commands2.cmd.run(self.elevator.move_down, self.elevator))
         self._joystick.rightTrigger().onTrue(commands2.cmd.runOnce(self.elevator.stop, self.elevator))
 
         # Configure buttons for intake control
-        self._joystick.a().whileTrue(commands2.cmd.run(self.intake.move_up, self.intake))
-        self._joystick.b().whileTrue(commands2.cmd.run(self.intake.move_down, self.intake))
-        self._joystick.x().onTrue(commands2.cmd.runOnce(self.intake.stop, self.intake))
+        #self._joystick.a().whileTrue(commands2.cmd.run(self.intake.move_up, self.intake))
+        #self._joystick.b().whileTrue(commands2.cmd.run(self.intake.move_down, self.intake))
+        #self._joystick.x().onTrue(commands2.cmd.runOnce(self.intake.stop, self.intake))
 
         self.drivetrain.register_telemetry(
             lambda state: self._logger.telemeterize(state)
