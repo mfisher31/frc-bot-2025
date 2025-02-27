@@ -6,6 +6,8 @@ from typing import Callable, overload
 from wpilib import DriverStation, Notifier, RobotController
 from wpilib.sysid import SysIdRoutineLog
 from wpimath.geometry import Pose2d, Rotation2d
+from wpimath.kinematics import ChassisSpeeds
+from wpimath.controller import PIDController
 
 
 class CommandSwerveDrivetrain(Subsystem, swerve.SwerveDrivetrain):
@@ -147,6 +149,12 @@ class CommandSwerveDrivetrain(Subsystem, swerve.SwerveDrivetrain):
 
         self._sim_notifier: Notifier | None = None
         self._last_sim_time: units.second = 0.0
+
+        # Add PID controllers
+        self.x_controller = PIDController(15.0, 1.0, 1.0)
+        self.y_controller = PIDController(15.0, 1.0, 1.0)
+        self.heading_controller = PIDController(15.0, 1.0, 1.0)
+        self.heading_controller.enableContinuousInput(-math.pi, math.pi)
 
         self._has_applied_operator_perspective = False
         """Keep track if we've ever applied the operator perspective before or not"""
@@ -318,3 +326,34 @@ class CommandSwerveDrivetrain(Subsystem, swerve.SwerveDrivetrain):
         :type vision_measurement_std_devs:  tuple[float, float, float] | None
         """
         swerve.SwerveDrivetrain.add_vision_measurement(self, vision_robot_pose, utils.fpga_to_current_time(timestamp), vision_measurement_std_devs)
+    def get_pose(self) -> Pose2d:
+        """
+        Gets the current pose of the robot.
+
+        :returns: The current pose of the robot.
+        :rtype: Pose2d
+        """
+        return super().get_state().pose
+    def follow_trajectory(self, sample):
+        # Enable continuous input for heading controller
+        self.heading_controller.enableContinuousInput(-math.pi, math.pi)
+
+        # Get current pose from swerve state
+        current_pose = self.get_pose()
+
+        # Combine feedforward and feedback
+        vx = sample.vx + self.x_controller.calculate(current_pose.X(), sample.x)
+        vy = sample.vy + self.y_controller.calculate(current_pose.Y(), sample.y)
+        omega = sample.omega + self.heading_controller.calculate(current_pose.rotation().radians(), sample.heading)
+
+        speeds = ChassisSpeeds(vx, vy, omega)
+
+        # Create field-centric request with proper enum references
+        request = swerve.requests.ApplyFieldSpeeds().with_speeds(speeds) \
+            .with_drive_request_type(swerve.swerve_module.SwerveModule.DriveRequestType.OPEN_LOOP_VOLTAGE) \
+            .with_steer_request_type(swerve.swerve_module.SwerveModule.SteerRequestType.POSITION) \
+            .with_desaturate_wheel_speeds(True) \
+            .with_wheel_force_feedforwards_x(sample.fx) \
+            .with_wheel_force_feedforwards_y(sample.fy)
+
+        self.set_control(request)

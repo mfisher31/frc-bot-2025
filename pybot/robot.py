@@ -13,12 +13,24 @@ from robotcontainer import RobotContainer
 
 class MyRobot(wpilib.TimedRobot):
     autonomousCommand: typing.Optional[commands2.Command] = None
-    
+
     def robotInit(self) -> None:
         self.container = RobotContainer()
         self.scheduler = commands2.CommandScheduler.getInstance()
 
     def robotPeriodic(self) -> None:
+
+        """This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
+        that you want ran during disabled, autonomous, teleoperated and test.
+
+        This runs after the mode specific periodic functions, but before LiveWindow and
+        SmartDashboard integrated updating."""
+
+        # Runs the Scheduler.  This is responsible for polling buttons, adding newly-scheduled
+        # commands, running already-scheduled commands, removing finished or interrupted commands,
+        # and running subsystem periodic() methods.  This must be called from the robot's periodic
+        # block in order for anything in the Command-based framework to work.
+        
         self.scheduler.run()
 
     def disabledInit(self) -> None:
@@ -32,12 +44,18 @@ class MyRobot(wpilib.TimedRobot):
         if self.autonomousCommand:
             self.autonomousCommand.schedule()
 
+
     def autonomousPeriodic(self) -> None:
         pass
 
     def teleopInit(self) -> None:
-        if self.autonomousCommand:
-            self.autonomousCommand.cancel()
+
+        # This makes sure that the autonomous stops running when
+        # teleop starts running. If you want the autonomous to
+        # continue until interrupted by another command, remove
+        # this line or comment it out.
+        #if self.autonomousCommand:
+        #    self.autonomousCommand.cancel()
 
         self.container.configureButtonBindings()
 
