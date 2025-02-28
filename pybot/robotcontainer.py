@@ -58,9 +58,9 @@ class RobotContainer:
         self.drivetrain = TunerConstants.create_drivetrain()
 
         # Initialize the elevator with motor IDs
-        self.elevator = Lifter(20, 14)
+        self.elevator = Lifter(20)
         # Initialize the intake with motor IDs
-        self.intake = Lifter(300, 400)
+        self.intake = Lifter(300)
 
         self.configureButtonBindings()
 
@@ -124,10 +124,10 @@ class RobotContainer:
             lambda: self._joystick.setRumble(wpilib.interfaces.GenericHID.RumbleType.kRightRumble, 0),
             lambda: self._joystick.setRumble(wpilib.interfaces.GenericHID.RumbleType.kLeftRumble, 1),
             lambda: self._joystick.setRumble(wpilib.interfaces.GenericHID.RumbleType.kLeftRumble, 0)
-            )
+        )
 
         # Log elevator positions when the 'B' button is pressed
-        self._joystick.b().whileTrue(commands2.cmd.run(lambda: logging.info(self.elevator.get_positions()), self.elevator))
+        #self._joystick.b().whileTrue(commands2.cmd.run(lambda: logging.info(self.elevator.get_positions()), self.elevator))
 
         # Configure buttons for intake control
         #self._joystick.a().whileTrue(commands2.cmd.run(self.intake.move_up, self.intake))
