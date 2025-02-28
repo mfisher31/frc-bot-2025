@@ -36,7 +36,7 @@ class RobotContainer:
             TunerConstants.speed_at_12_volts * .1
         )  # speed_at_12_volts desired top speed
         self._max_angular_rate = rotationsToRadians(
-            0.75
+            0.75 * .1
         )  # 3/4 of a rotation per second max angular velocity
 
         # Setting up bindings for necessary control of the swerve drive platform
@@ -100,9 +100,17 @@ class RobotContainer:
         )
         
         # Configure buttons for elevator control
-        self._joystick.y().whileTrue(commands2.cmd.run(self.elevator.move_up, self.elevator))
+        self._joystick.y().whileTrue(commands2.cmd.startEnd(
+            lambda: self.elevator.move_up,
+            lambda: self.elevator.stop
+        ))
+
+        self._joystick.a().whileTrue(commands2.cmd.startEnd(
+            lambda: self.elevator.move_down,
+            lambda: self.elevator.stop
+        ))
+    
         
-        self._joystick.a().whileTrue(commands2.cmd.run(self.elevator.move_down, self.elevator))
         self._joystick.rightTrigger().onTrue(commands2.cmd.runOnce(self.elevator.stop, self.elevator))
 
         # Set the rumble when the 'X' button is pressed

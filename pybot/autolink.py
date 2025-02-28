@@ -43,8 +43,6 @@ class AutonomousCommand(commands2.Command):
             sample = self.trajectory.sample_at(self.timer.get(), self.is_red_alliance)
 
             if sample:
-                print(f"Sampled trajectory at {sample.timestamp} seconds")
-                print(f"laststamp: {self.laststamp}")
                 if sample.timestamp != self.laststamp:
 
                     # Command the drivetrain to follow the sampled trajectory
