@@ -124,13 +124,12 @@ class RobotContainer:
             lambda state: self._logger.telemeterize(state)
         )
 
-    def getAutonomousCommand(self) -> commands2.Command:
+    def getAutonomousCommand(self, selected_traj_file: str) -> commands2.Command:
         """Use this to pass the autonomous command to the main {@link Robot} class.
 
         :returns: the command to run in autonomous
         """
-        return AutonomousCommand(self.drivetrain, "COMPLEXCRAZY", is_red_alliance=self.is_red_alliance())
+        return AutonomousCommand(self.drivetrain, selected_traj_file, is_red_alliance=self.is_red_alliance())
     
     def is_red_alliance(self):
         return wpilib.DriverStation.getAlliance() == wpilib.DriverStation.Alliance.kRed
-    

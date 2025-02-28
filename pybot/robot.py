@@ -8,6 +8,7 @@
 import wpilib
 import commands2
 import typing
+import os
 
 from robotcontainer import RobotContainer
 
@@ -15,6 +16,7 @@ LATENCY_SECONDS = 0.02
 
 class MyRobot(wpilib.TimedRobot):
     autonomousCommand: typing.Optional[commands2.Command] = None
+    chooser: wpilib.SendableChooser = wpilib.SendableChooser()
     
     def __init__(self):
         super().__init__(LATENCY_SECONDS)
@@ -22,6 +24,23 @@ class MyRobot(wpilib.TimedRobot):
     def robotInit(self) -> None:
         self.container = RobotContainer()
         self.scheduler = commands2.CommandScheduler.getInstance()
+        self.smartdashboard = wpilib.SendableChooser()
+        
+        # List .traj files and put them in SendableChooser
+        self.list_traj_files()
+
+    def list_traj_files(self) -> None:
+        traj_dir = 'deploy/choreo'
+        traj_files = [f for f in os.listdir(traj_dir) if f.endswith('.traj')]
+        
+        for traj_file in traj_files:
+            self.chooser.addOption(traj_file.removesuffix('.traj'), traj_file.removesuffix('.traj'))
+            self.chooser.setDefaultOption(traj_file.removesuffix('.traj'), traj_file.removesuffix('.traj'))
+        
+        wpilib.SmartDashboard.putData('Trajectory Files', self.chooser)
+
+    def get_selected_traj_file(self) -> str:
+        return self.chooser.getSelected()
 
     def robotPeriodic(self) -> None:
 
@@ -45,7 +64,8 @@ class MyRobot(wpilib.TimedRobot):
         pass
 
     def autonomousInit(self) -> None:
-        self.autonomousCommand = self.container.getAutonomousCommand()
+        selected_traj_file = self.get_selected_traj_file()
+        self.autonomousCommand = self.container.getAutonomousCommand(selected_traj_file)
         if self.autonomousCommand:
             self.autonomousCommand.schedule()
 
