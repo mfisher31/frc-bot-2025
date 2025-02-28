@@ -35,6 +35,7 @@ class MyRobot(wpilib.TimedRobot):
         
         for traj_file in traj_files:
             self.chooser.addOption(traj_file.removesuffix('.traj'), traj_file.removesuffix('.traj'))
+            self.chooser.setDefaultOption(traj_file.removesuffix('.traj'), traj_file.removesuffix('.traj'))
         
         wpilib.SmartDashboard.putData('Trajectory Files', self.chooser)
 
