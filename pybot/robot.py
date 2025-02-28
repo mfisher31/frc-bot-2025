@@ -11,9 +11,14 @@ import typing
 
 from robotcontainer import RobotContainer
 
+LATENCY_SECONDS = 0.02
+
 class MyRobot(wpilib.TimedRobot):
     autonomousCommand: typing.Optional[commands2.Command] = None
-
+    
+    def __init__(self):
+        super().__init__(LATENCY_SECONDS)
+    
     def robotInit(self) -> None:
         self.container = RobotContainer()
         self.scheduler = commands2.CommandScheduler.getInstance()
