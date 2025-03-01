@@ -83,5 +83,6 @@
     {"t":1.99314, "x":14.03625, "y":2.06694, "heading":0.5236, "vx":0.0, "vy":0.0, "omega":0.0, "ax":0.0, "ay":0.0, "alpha":0.0, "fx":[0.0,0.0,0.0,0.0], "fy":[0.0,0.0,0.0,0.0]}],
   "splits":[0]
  },
- "events":[]
+ "events":[
+   {"name":"CoralPlace", "from":{"target":2, "targetTimestamp":1.99314, "offset":{"exp":"0 s", "val":0.0}}, "event":null}]
 }

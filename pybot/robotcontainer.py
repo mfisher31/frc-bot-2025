@@ -143,7 +143,7 @@ class RobotContainer:
 
         :returns: the command to run in autonomous
         """
-        return AutonomousCommand(self.drivetrain, selected_traj_file, is_red_alliance=self.is_red_alliance())
+        return AutonomousCommand(self.drivetrain, self.intake, selected_traj_file, is_red_alliance=self.is_red_alliance())
     
     def is_red_alliance(self):
         return wpilib.DriverStation.getAlliance() == wpilib.DriverStation.Alliance.kRed
