@@ -12,7 +12,7 @@ import os
 from robotcontainer import RobotContainer
 import limelight
 import limelightresults
-from cscore import CameraServer
+from cscore import CameraServer, HttpCamera
 
 LATENCY_SECONDS = 0.02
 
@@ -34,9 +34,21 @@ class MyRobot(wpilib.TimedRobot):
         # Initialize Limelights
         self.limelightInit()
 
-        # Start CameraServer for Limelight video feeds
-        CameraServer.startAutomaticCapture(name="Limelight1", path="/dev/video0")
-        CameraServer.startAutomaticCapture(name="Limelight2", path="/dev/video1")
+        # Initialize CameraServer
+        self.cameraserverInit()
+
+    def cameraserverInit(self):
+        if self.limelight1 or self.limelight2:
+
+            self.cameraserver = CameraServer()
+            self.cameraserver.enableLogging()
+        
+        if self.limelight1:
+            self.cameraserver.addCamera(HttpCamera(self.limelight1.get_name(), f"{addys[0]}:5800"))
+        if self.limelight2:
+            self.cameraserver.addCamera(HttpCamera(self.limelight2.get_name(), f"{addys[1]}:5800"))
+        
+
 
     def list_traj_files(self) -> None:
         traj_dir = f"{wpilib.getOperatingDirectory()}/deploy/choreo"
@@ -132,6 +144,8 @@ class MyRobot(wpilib.TimedRobot):
             for result in parsed_result1.fiducialResults:
                 print("Limelight1 fiducial_id")
                 print(result.fiducial_id)
+
+            CameraServer().addCamera(HttpCamera(self.limelight1.get_name(), f"{addys[0]}:5800"))
         else:
             self.limelight1 = None
 
@@ -143,6 +157,8 @@ class MyRobot(wpilib.TimedRobot):
             for result in parsed_result2.fiducialResults:
                 print("Limelight2 fiducial_id")
                 print(result.fiducial_id)
+
+            CameraServer().addCamera(HttpCamera(self.limelight2.get_name(), f"{addys[1]}:5800"))
         else:
             self.limelight2 = None
 
