@@ -13,6 +13,8 @@ from robotcontainer import RobotContainer
 import limelight
 import limelightresults
 from cscore import CameraServer, HttpCamera
+import requests
+import logging
 
 LATENCY_SECONDS = 0.02
 
@@ -31,11 +33,14 @@ class MyRobot(wpilib.TimedRobot):
         # List .traj files and put them in SendableChooser
         self.list_traj_files()
 
+        self.limelight1 = None
+        self.limelight2 = None
+
         # Initialize Limelights
-        self.limelightInit()
+        #self.limelightInit()
 
         # Initialize CameraServer
-        self.cameraserverInit()
+        #self.cameraserverInit()
 
     def cameraserverInit(self):
         if self.limelight1 or self.limelight2:
@@ -138,27 +143,35 @@ class MyRobot(wpilib.TimedRobot):
 
         if len(addys) >= 1:
             self.limelight1 = limelight.Limelight(addys[0])
-            result1 = self.limelight1.get_results()
-            print(result1)
-            parsed_result1 = limelightresults.parse_results(result1)
-            for result in parsed_result1.fiducialResults:
-                print("Limelight1 fiducial_id")
-                print(result.fiducial_id)
+            try:
+                result1 = self.limelight1.get_results()
+                print(result1)
+                parsed_result1 = limelightresults.parse_results(result1)
+                for result in parsed_result1.fiducialResults:
+                    print("Limelight1 fiducial_id")
+                    print(result.fiducial_id)
 
-            CameraServer().addCamera(HttpCamera(self.limelight1.get_name(), f"{addys[0]}:5800"))
+                CameraServer().addCamera(HttpCamera(self.limelight1.get_name(), f"{addys[0]}:5800"))
+            except requests.exceptions.ConnectionError as e:
+                logging.error(f"Failed to connect to Limelight1: {e}")
+                self.limelight1 = None
         else:
             self.limelight1 = None
 
         if len(addys) >= 2:
             self.limelight2 = limelight.Limelight(addys[1])
-            result2 = self.limelight2.get_results()
-            print(result2)
-            parsed_result2 = limelightresults.parse_results(result2)
-            for result in parsed_result2.fiducialResults:
-                print("Limelight2 fiducial_id")
-                print(result.fiducial_id)
+            try:
+                result2 = self.limelight2.get_results()
+                print(result2)
+                parsed_result2 = limelightresults.parse_results(result2)
+                for result in parsed_result2.fiducialResults:
+                    print("Limelight2 fiducial_id")
+                    print(result.fiducial_id)
 
-            CameraServer().addCamera(HttpCamera(self.limelight2.get_name(), f"{addys[1]}:5800"))
+                CameraServer().addCamera(HttpCamera(self.limelight2.get_name(), f"{addys[1]}:5800"))
+            except requests.exceptions.ConnectionError as e:
+                logging.error(f"Failed to connect to Limelight2: {e}")
+                self.limelight2 = None
         else:
             self.limelight2 = None
 

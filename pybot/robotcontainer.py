@@ -33,10 +33,10 @@ class RobotContainer:
     def __init__(self) -> None:
         
         self._max_speed = (
-            TunerConstants.speed_at_12_volts * .1
+            TunerConstants.speed_at_12_volts * .7
         )  # speed_at_12_volts desired top speed
         self._max_angular_rate = rotationsToRadians(
-            0.75 * .1
+            0.75
         )  # 3/4 of a rotation per second max angular velocity
 
         # Setting up bindings for necessary control of the swerve drive platform
@@ -60,7 +60,7 @@ class RobotContainer:
         # Initialize the elevator with motor IDs
         self.elevator = Lifter(20)
         # Initialize the intake with motor IDs
-        self.intake = Lifter(300)
+        self.intake = Lifter(18)
 
         self.configureButtonBindings()
 
@@ -100,39 +100,37 @@ class RobotContainer:
         )
         
         # Configure buttons for elevator control
-        self._joystick.y().whileTrue(commands2.cmd.startEnd(
-            lambda: self.elevator.move_up,
-            lambda: self.elevator.stop
-        ))
+        #self._joystick.y().whileTrue(commands2.cmd.run(
+        #    lambda: self.elevator.move_up, self.elevator
+        #))
 
-        self._joystick.a().whileTrue(commands2.cmd.startEnd(
-            lambda: self.elevator.move_down,
-            lambda: self.elevator.stop
-        ))
+        #self._joystick.a().whileTrue(commands2.cmd.run(
+        #    lambda: self.elevator.move_down, self.elevator
+        #))
     
         
         self._joystick.rightTrigger().onTrue(commands2.cmd.runOnce(self.elevator.stop, self.elevator))
 
         # Set the rumble when the 'X' button is pressed
-        self._joystick.x().whileTrue(commands2.cmd.startEnd(
-            lambda: self._joystick.setRumble(wpilib.interfaces.GenericHID.RumbleType.kBothRumble, 1),
-            lambda: self._joystick.setRumble(wpilib.interfaces.GenericHID.RumbleType.kBothRumble, 0)
-        ))
-        if wpilib.DriverStation.isTeleop() and wpilib.DriverStation.getMatchTime() <= 15:
-            commands2.cmd.run(
-            lambda: self._joystick.setRumble(wpilib.interfaces.GenericHID.RumbleType.kRightRumble, 1),
-            lambda: self._joystick.setRumble(wpilib.interfaces.GenericHID.RumbleType.kRightRumble, 0),
-            lambda: self._joystick.setRumble(wpilib.interfaces.GenericHID.RumbleType.kLeftRumble, 1),
-            lambda: self._joystick.setRumble(wpilib.interfaces.GenericHID.RumbleType.kLeftRumble, 0)
-        )
+        #self._joystick.x().whileTrue(commands2.cmd.startEnd(
+        #    lambda: self._joystick.setRumble(wpilib.interfaces.GenericHID.RumbleType.kBothRumble, 1),
+        #    lambda: self._joystick.setRumble(wpilib.interfaces.GenericHID.RumbleType.kBothRumble, 0)
+        #))
+        #if wpilib.DriverStation.isTeleop() and wpilib.DriverStation.getMatchTime() <= 15:
+        #    commands2.cmd.run(
+        #    lambda: self._joystick.setRumble(wpilib.interfaces.GenericHID.RumbleType.kRightRumble, 1),
+        #    lambda: self._joystick.setRumble(wpilib.interfaces.GenericHID.RumbleType.kRightRumble, 0),
+        #    lambda: self._joystick.setRumble(wpilib.interfaces.GenericHID.RumbleType.kLeftRumble, 1),
+        #    lambda: self._joystick.setRumble(wpilib.interfaces.GenericHID.RumbleType.kLeftRumble, 0)
+        #)
 
         # Log elevator positions when the 'B' button is pressed
         #self._joystick.b().whileTrue(commands2.cmd.run(lambda: logging.info(self.elevator.get_positions()), self.elevator))
 
         # Configure buttons for intake control
-        #self._joystick.a().whileTrue(commands2.cmd.run(self.intake.move_up, self.intake))
-        #self._joystick.b().whileTrue(commands2.cmd.run(self.intake.move_down, self.intake))
-        #self._joystick.x().onTrue(commands2.cmd.runOnce(self.intake.stop, self.intake))
+        self._joystick.rightBumper().whileTrue(commands2.cmd.run(lambda: self.intake.set_motor(.2), self.intake))
+        self._joystick.leftBumper().whileTrue(commands2.cmd.run(lambda: self.intake.set_motor(-.2), self.intake))
+        self._joystick.b().onTrue(commands2.cmd.runOnce(self.intake.stop, self.intake))
 
         self.drivetrain.register_telemetry(
             lambda state: self._logger.telemeterize(state)
@@ -146,4 +144,4 @@ class RobotContainer:
         return AutonomousCommand(self.drivetrain, self.intake, selected_traj_file, is_red_alliance=self.is_red_alliance())
     
     def is_red_alliance(self):
-        return wpilib.DriverStation.getAlliance() == wpilib.DriverStation.Alliance.kRed
+        return not wpilib.DriverStation.getAlliance() == wpilib.DriverStation.Alliance.kRed

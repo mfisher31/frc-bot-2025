@@ -11,20 +11,22 @@ class Lifter:
 
     def move_down(self):
         try:
-            if self.motor.getReverseLimitSwitch().isPressed():
+            if self.motor.get_reverse_limit() == 0:
                 logger.warning("Reverse limit reached; cannot move down")
                 self.stop()
             else:
+                logger.info("Moving down")
                 self.motor.set(-0.05)  # Gentle downward movement
         except Exception as e:
             logger.error(f"Error moving down: {e}")
 
     def move_up(self):
         try:
-            if self.motor.getForwardLimitSwitch().isPressed():
+            if self.motor.get_forward_limit() == 0:
                 logger.warning("Forward limit reached; cannot move up")
                 self.stop()
             else:
+                logger.info("Moving up")
                 self.motor.set(0.10)  # Upward movement
         except Exception as e:
             logger.error(f"Error moving up: {e}")
@@ -39,5 +41,6 @@ class Lifter:
     def set_motor(self, value):
         try:
             self.motor.set(value)
+            logging.info(f"SETTING TO {value}")
         except Exception as e:
             logger.error(f"Error setting motor: {e}")
