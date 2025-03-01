@@ -14,7 +14,7 @@ LATENCY_SECONDS = 0.02
 
 class MyRobot(wpilib.TimedRobot):
     autonomousCommand: typing.Optional[commands2.Command] = None
-    chooser: wpilib.SendableChooser = wpilib.SendableChooser()
+    chooser: None
     
     def __init__(self):
         super().__init__(LATENCY_SECONDS)
@@ -22,7 +22,6 @@ class MyRobot(wpilib.TimedRobot):
     def robotInit(self) -> None:
         self.container = RobotContainer()
         self.scheduler = commands2.CommandScheduler.getInstance()
-        self.smartdashboard = wpilib.SendableChooser()
         self.registerTrajectories()
 
     def registerTrajectories(self) -> None:
@@ -32,11 +31,12 @@ class MyRobot(wpilib.TimedRobot):
             if f.endswith('.traj'):
                 traj_files.append (f)
         
+        self.chooser = wpilib.SendableChooser()
         for traj_file in traj_files:
             self.chooser.addOption (traj_file.removesuffix ('.traj'),
-                                    traj_file.removesuffix ('.traj'))
-        
+                                    traj_file.removesuffix ('.traj'))        
         self.chooser.setDefaultOption (AUTOMODE_DEFAULT, AUTOMODE_DEFAULT)
+
         wpilib.SmartDashboard.putData ('Trajectory Files', self.chooser)
 
     def selectedTrajectory(self) -> str:
@@ -52,8 +52,8 @@ class MyRobot(wpilib.TimedRobot):
         pass
 
     def autonomousInit(self) -> None:
-        selected_traj_file = self.selectedTrajectory()
-        self.autonomousCommand = self.container.getAutonomousCommand (selected_traj_file)
+        selected = self.selectedTrajectory()
+        self.autonomousCommand = self.container.getAutonomousCommand (selected)
         if self.autonomousCommand:
             self.autonomousCommand.schedule()
 
