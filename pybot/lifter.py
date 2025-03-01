@@ -5,13 +5,9 @@ from phoenix6.hardware import talon_fx
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Define position limits
-POS_MIN = 1.3
-POS_MAX = 19
-
 class Lifter:
-    def __init__(self, right_id):
-        self.motor = talon_fx.TalonFX(right_id)
+    def __init__(self, master_id):
+        self.motor = talon_fx.TalonFX(master_id)
 
     def move_down(self):
         try:

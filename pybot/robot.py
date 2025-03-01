@@ -9,8 +9,10 @@ import wpilib
 import commands2
 import typing
 import os
-
 from robotcontainer import RobotContainer
+import limelight
+import limelightresults
+from cscore import CameraServer
 
 LATENCY_SECONDS = 0.02
 
@@ -29,6 +31,13 @@ class MyRobot(wpilib.TimedRobot):
         # List .traj files and put them in SendableChooser
         self.list_traj_files()
 
+        # Initialize Limelights
+        self.limelightInit()
+
+        # Start CameraServer for Limelight video feeds
+        CameraServer.startAutomaticCapture(name="Limelight1", path="/dev/video0")
+        CameraServer.startAutomaticCapture(name="Limelight2", path="/dev/video1")
+
     def list_traj_files(self) -> None:
         traj_dir = f"{wpilib.getOperatingDirectory()}/deploy/choreo"
         traj_files = [f for f in os.listdir(traj_dir) if f.endswith('.traj')]
@@ -43,7 +52,6 @@ class MyRobot(wpilib.TimedRobot):
         return self.chooser.getSelected()
 
     def robotPeriodic(self) -> None:
-
         """This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
         that you want ran during disabled, autonomous, teleoperated and test.
 
@@ -69,12 +77,10 @@ class MyRobot(wpilib.TimedRobot):
         if self.autonomousCommand:
             self.autonomousCommand.schedule()
 
-
     def autonomousPeriodic(self) -> None:
         pass
 
     def teleopInit(self) -> None:
-
         # This makes sure that the autonomous stops running when
         # teleop starts running. If you want the autonomous to
         # continue until interrupted by another command, remove
@@ -85,12 +91,59 @@ class MyRobot(wpilib.TimedRobot):
         self.container.configureButtonBindings()
 
     def teleopPeriodic(self) -> None:
-        pass
+        if self.limelight1 is not None:
+            status1 = self.limelight1.get_status()
+            result1 = self.limelight1.get_results()
+            parsed_result1 = limelightresults.parse_results(result1)
+            for fiducial_result in parsed_result1.fiducialResults:
+                print(f"Limelight1 fiducial_id: {fiducial_result.fiducial_id}, cpu: {status1['cpu']}")
+
+        if self.limelight2 is not None:
+            status2 = self.limelight2.get_status()
+            result2 = self.limelight2.get_results()
+            parsed_result2 = limelightresults.parse_results(result2)
+            for fiducial_result in parsed_result2.fiducialResults:
+                print(f"Limelight2 fiducial_id: {fiducial_result.fiducial_id}, cpu: {status2['cpu']}")
 
     def testInit(self) -> None:
         self.scheduler.cancelAll()
 
     def simulationInit(self) -> None:
         pass
+
     def simulationPeriodic(self) -> None:
         pass
+
+    def limelightInit(self):
+        # save for reference
+        print("----------- LIMELIGHT -----------")
+        addys = limelight.discover_limelights()
+        if not addys:
+            print("No Limelights found")
+            self.limelight1 = None
+            self.limelight2 = None
+            return
+
+        if len(addys) >= 1:
+            self.limelight1 = limelight.Limelight(addys[0])
+            result1 = self.limelight1.get_results()
+            print(result1)
+            parsed_result1 = limelightresults.parse_results(result1)
+            for result in parsed_result1.fiducialResults:
+                print("Limelight1 fiducial_id")
+                print(result.fiducial_id)
+        else:
+            self.limelight1 = None
+
+        if len(addys) >= 2:
+            self.limelight2 = limelight.Limelight(addys[1])
+            result2 = self.limelight2.get_results()
+            print(result2)
+            parsed_result2 = limelightresults.parse_results(result2)
+            for result in parsed_result2.fiducialResults:
+                print("Limelight2 fiducial_id")
+                print(result.fiducial_id)
+        else:
+            self.limelight2 = None
+
+        print("----------- LIMELIGHT -----------")
