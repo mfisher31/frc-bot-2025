@@ -27,7 +27,10 @@ class MyRobot(wpilib.TimedRobot):
 
     def registerTrajectories(self) -> None:
         traj_dir = f"{wpilib.getOperatingDirectory()}/deploy/choreo"
-        traj_files = [f for f in os.listdir(traj_dir) if f.endswith('.traj')]
+        traj_files = []
+        for f in os.listdir (traj_dir):
+            if f.endswith('.traj'):
+                traj_files.append (f)
         
         for traj_file in traj_files:
             self.chooser.addOption (traj_file.removesuffix ('.traj'),
