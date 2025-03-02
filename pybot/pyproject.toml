@@ -29,7 +29,9 @@ robotpy_extras = [
 requires = [
     'limelightlib-python',
     'phoenix6',
-    'sleipnirgroup-choreolib'
+    'sleipnirgroup-choreolib',
+    'robotpy-cscore',
+    'robotpy-apriltag',
 ]
 
 #################
