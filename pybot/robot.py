@@ -9,7 +9,7 @@ import os, typing
 import wpilib, commands2
 from robotcontainer import RobotContainer
 
-AUTOMODE_DEFAULT = 'moveAndDropREDMIDDLE'
+AUTOMODE_DEFAULT = 'outwayred'
 LATENCY_SECONDS = 0.02
 
 class MyRobot(wpilib.TimedRobot):

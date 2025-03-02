@@ -33,10 +33,11 @@ class RobotContainer:
     def __init__(self) -> None:
         
         self._max_speed = (
-            TunerConstants.speed_at_12_volts * .7
+            TunerConstants.speed_at_12_volts * .6
         )  # speed_at_12_volts desired top speed
         self._max_angular_rate = rotationsToRadians(
-            0.75
+            0.75 * .5
+            #maybe limit this rotational
         )  # 3/4 of a rotation per second max angular velocity
 
         # Setting up bindings for necessary control of the swerve drive platform
@@ -58,9 +59,9 @@ class RobotContainer:
         self.drivetrain = TunerConstants.create_drivetrain()
 
         # Initialize the elevator with motor IDs
-        self.elevator = Lifter(20)
+        self.elevator = Lifter(20, 16)
         # Initialize the intake with motor IDs
-        self.intake = Lifter(18)
+        self.intake = Lifter(18, 22)
 
         self.configureButtonBindings()
 
@@ -95,17 +96,19 @@ class RobotContainer:
         )
         
         # reset the field-centric heading on left bumper press
-        self._joystick.leftTrigger().onTrue(
+        self._joystick.x().onTrue(
             self.drivetrain.runOnce(lambda: self.drivetrain.seed_field_centric())
         )
        
         # Configure buttons for elevator control
-        self._joystick.y().whileTrue (commands2.cmd.run(
-           lambda: self.elevator.moveUp(), self.elevator
+        self._joystick.y().whileTrue(commands2.cmd.startEnd(
+           lambda: self.elevator.moveUp(),
+           lambda: self.elevator.stop()
         ))
 
-        self._joystick.a().whileTrue(commands2.cmd.run(
-           lambda: self.elevator.moveDown(), self.elevator
+        self._joystick.a().whileTrue(commands2.cmd.startEnd(
+           lambda: self.elevator.moveDown(),
+           lambda: self.elevator.stop()
         ))
     
         
@@ -128,9 +131,10 @@ class RobotContainer:
         #self._joystick.b().whileTrue(commands2.cmd.run(lambda: logging.info(self.elevator.get_positions()), self.elevator))
 
         # Configure buttons for intake control
-        self._joystick.rightBumper().whileTrue(commands2.cmd.run(lambda: self.intake.setMotor(.2), self.intake))
-        self._joystick.leftBumper().whileTrue(commands2.cmd.run(lambda: self.intake.setMotor(-.2), self.intake))
-        self._joystick.b().onTrue(commands2.cmd.runOnce(self.intake.stop, self.intake))
+        self._joystick.rightBumper().whileTrue(commands2.cmd.startEnd(
+            lambda: self.intake.setMotor(.2),
+            lambda: self.intake.stop()
+        ))
 
         self.drivetrain.register_telemetry(
             lambda state: self._logger.telemeterize(state)
@@ -144,4 +148,4 @@ class RobotContainer:
         return AutonomousCommand(self.drivetrain, self.intake, selected_traj_file, is_red_alliance=self.is_red_alliance())
     
     def is_red_alliance(self):
-        return not wpilib.DriverStation.getAlliance() == wpilib.DriverStation.Alliance.kRed
+        return wpilib.DriverStation.getAlliance() == wpilib.DriverStation.Alliance.kRed
