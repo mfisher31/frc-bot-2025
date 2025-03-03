@@ -24,8 +24,14 @@ cd pybot
 robotpy sync
 ```
 
-## Simulate
+## Phoenix6 Updates
+This library can update frequently. The sim can run in HW mode by default. "Make sure your phoenix6 is up to date using [pip]. You can also force simulation to run by setting the CTR_TARGET=Simulation environment variable."
+```sh
+python -m pip install -U phoenix6
 ```
+
+## Simulate
+```sh
 robotpy sim
 ```
 
@@ -33,4 +39,6 @@ robotpy sim
 TODO: Not needed yet.
 
 ## Deploy
-*Needs RND*
+```sh
+robotpy deploy --skip-tests
+```
