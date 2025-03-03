@@ -20,15 +20,15 @@ boost_dep = dependency ('boost', required : false)
 frc_is_sim = not meson.is_cross_build()
 frc_platform = frc_is_sim ? 'linuxx86-64' : 'linuxathena'
 frc_buildtype = 'release'
-frc_libdir = meson.project_source_root() / 'build/install/frcUserProgram/@0@/@1@/lib'.format(frc_platform, frc_buildtype)
+frc_libdir = fs.expanduser('~/wpilib/2025/luabot/lib/@0@').format (frc_platform)
 
-subdir ('meson/allwpilib')
 
 luabot_proj = subproject ('luabot', default_options: [
-   'test=@0@'.format(frc_is_sim ? 'enabled' : 'disabled'),
+    'test=@0@'.format(frc_is_sim ? 'enabled' : 'disabled'),
     'frc-libs=@0@'.format(frc_libdir)
 ])
 luabot_dep = luabot_proj.get_variable ('luabot_dep')
+wpilib_deps = luabot_proj.get_variable ('wpilib_deps')
 
 # Phoenix 6
 phoenix6_libs = []
@@ -40,9 +40,11 @@ if frc_is_sim
         CTRE_SimVictorSPX
         CTRE_PhoenixTools_Sim
         CTRE_SimProPigeon2
+        CTRE_PhoenixTools
         CTRE_SimPigeonIMU
         CTRE_SimProCANdi
         CTRE_SimProCANcoder
+        CTRE_Phoenix6_WPI
         CTRE_SimProTalonFXS
         CTRE_SimProCANrange
         CTRE_SimProTalonFX

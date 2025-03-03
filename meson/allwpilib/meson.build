@@ -1,4 +1,5 @@
-if frc_is_sim
+if false
+    # This is for cmake. Save for reference when it can be used with the RIO
     # Check if wpilib is installed, if not build it as a subproject.
     wpilibc_dep  = dependency ('wpilibc', method: 'cmake', required: false)
     if wpilibc_dep.found()
@@ -42,31 +43,5 @@ if frc_is_sim
         hal_dep, 
         newcommands_dep
     ]
-else
-    wpilib_sonames = '''
-        cameraserver
-        cscore
-        wpimathjni
-        wpiHal
-        wpiutil
-        ntcorejni
-        wpiHaljni
-        ntcore
-        wpilibc
-        wpimath
-        cscorejni
-        wpinet
-        wpilibNewCommands
-        apriltagjni
-        wpinetjni
-        apriltag
-        wpiutiljni
-        opencv_java4100
-        pthread
-    '''.split()
-    wpilib_deps = []
-
-    foreach lib: wpilib_sonames
-        wpilib_deps += cpp.find_library (lib, dirs: [ frc_libdir ], required: true)
-    endforeach
+else    
 endif
