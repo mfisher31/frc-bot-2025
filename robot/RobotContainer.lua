@@ -5,9 +5,7 @@ typedef struct cRobotContainer cRobotContainer;
 cRobotContainer* cRobotContainerNew();
 ]]
 
-ffi.load ('frc-bot-2025', true)
-
----DriverStation wrapper
+---RobotContainer wrapper
 ---@class RobotContainer
 local RobotContainer = {}
 local RobotContainer_mt = {
@@ -15,8 +13,8 @@ local RobotContainer_mt = {
 }
 
 function RobotContainer.new()
-    return ffi.C.cRobotContainerNew ()
+    return ffi.C.cRobotContainerNew()
 end
 
-ffi.metatype('cRobotContainer', RobotContainer_mt)
+ffi.metatype ('cRobotContainer', RobotContainer_mt)
 return RobotContainer

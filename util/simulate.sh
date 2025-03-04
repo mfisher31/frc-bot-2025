@@ -2,7 +2,7 @@
 
 set -e
 
-meson install --destdir=stage --quiet
+rm -rf stage && meson install --destdir=stage --quiet
 
 export SRCROOT=`dirname "$0"`
 export SRCROOT=`dirname ${SRCROOT}`

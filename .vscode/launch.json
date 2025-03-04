@@ -5,15 +5,18 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Sim (Lua)",
+      "name": "Sim (Linux)",
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/build/subprojects/luabot/luabot",
-      "args": [ "${workspaceFolder}/robot/main.lua" ],
+      "args": [ "${workspaceFolder}/robot/simulate.lua" ],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}/build/stage",
       "environment": [
-        { "name": "LUA_PATH", "value": "${workspaceFolder}/robot/?/?.lua:${workspaceFolder}/build/stage/share/luajit-2.1" }
+        { "name": "HALSIM_EXTENSIONS", "value": "halsim_gui" },
+        { "name": "LD_LIBRARY_PATH", "value": "${workspaceFolder}/src:~/wpilib/2025/luabot/lib/linuxx86-64:${workspaceFolder}/build/stage/lib/x86_64-linux-gnu" },
+        { "name": "LUA_CPATH", "value": "${workspaceFolder}/build/stage/lib/lua/5.1/?.so" },
+        { "name": "LUA_PATH", "value": "${workspaceFolder}/build/subprojects/luabot/bindings/lua/?.lua;${workspaceFolder}/robot/?.lua;${workspaceFolder}/build/stage/share/luajit-2.1/?.lua;${workspaceFolder}/build/stage/share/lua/5.1/?.lua" }
       ],
       "externalConsole": false,
       "MIMode": "gdb",
