@@ -4,18 +4,31 @@
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
-
     {
-      "type": "wpilib",
-      "name": "WPILib Desktop Debug",
+      "name": "Sim (Lua)",
+      "type": "cppdbg",
       "request": "launch",
-      "desktop": true,
-    },
-    {
-      "type": "wpilib",
-      "name": "WPILib roboRIO Debug",
-      "request": "launch",
-      "desktop": false,
+      "program": "${workspaceFolder}/build/subprojects/luabot/luabot",
+      "args": [ "${workspaceFolder}/robot/main.lua" ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}/build/stage",
+      "environment": [
+        { "name": "LUA_PATH", "value": "${workspaceFolder}/robot/?/?.lua:${workspaceFolder}/build/stage/share/luajit-2.1" }
+      ],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "setupCommands": [
+          {
+              "description": "Enable pretty-printing for gdb",
+              "text": "-enable-pretty-printing",
+              "ignoreFailures": true
+          },
+          {
+              "description": "Set Disassembly Flavor to Intel",
+              "text": "-gdb-set disassembly-flavor intel",
+              "ignoreFailures": true
+          }
+      ]
     }
   ]
 }
