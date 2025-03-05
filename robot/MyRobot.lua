@@ -15,12 +15,10 @@ function MyRobot:robotInit()
 end
 
 function MyRobot:robotPeriodic()
-    -- FIXME: this crashes with a core dump.
-    -- self.scheduler:run()
+    self.scheduler:run()
 end
 
 function MyRobot:disabledInit()
-    
 end
 
 function MyRobot:disabledPeriodic()
@@ -31,37 +29,32 @@ function MyRobot:disabledExit() end
 function MyRobot:autonomousInit() end
 
 function MyRobot:autonomousPeriodic()
-    self.scheduler:run()
 end
 
-function MyRobot:teleopInit() end
+function MyRobot:teleopInit()
+    if not self.controlBound then
+        self.container:configureBindings()
+        self.controlBound = true
+    end
+end
 
 function MyRobot:teleopPeriodic()
-    self.scheduler:run()
 end
 
 function MyRobot:testInit() end
-
-function MyRobot:testPeriodic()
-end
+function MyRobot:testPeriodic() end
 
 function MyRobot:simulationInit() end
-
 function MyRobot:simulationPeriodic() end
 
-function MyRobot:autonomousExit() end
-
-function MyRobot:teleopExit() end
-
-function MyRobot:testExit() end
-
-local function new()
+function MyRobot.new()
     local r = TimedRobot.init({}, 0.01)
-    setmetatable(r, { __index = MyRobot })
-    r.hasIterated = false;
+    setmetatable (r, { __index = MyRobot })
+    r.controlBound = false;
+    r.container = RobotContainer.new()
     return r
 end
 
 return {
-    new = new
+    new = MyRobot.new
 }

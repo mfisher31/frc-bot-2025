@@ -8,4 +8,7 @@ cRobotContainer* cRobotContainerNew() {
     return (cRobotContainer*) rc;
 }
 
+void cRobotContainerConfigureBindings (cRobotContainer* self) {
+    ((RobotContainer*) self)->ConfigureBindings();
+}
 }

@@ -31,9 +31,7 @@ public:
     subsystems::CommandSwerveDrivetrain drivetrain{TunerConstants::CreateDrivetrain()};
 
     RobotContainer();
+    void ConfigureBindings();
 
     frc2::CommandPtr GetAutonomousCommand();
-
-private:
-    void ConfigureBindings();
 };

@@ -7,7 +7,7 @@ rm -rf stage && meson install --destdir=stage --quiet
 export SRCROOT=`dirname "$0"`
 export SRCROOT=`dirname ${SRCROOT}`
 
-export HALSIM_EXTENSIONS="halsim_gui" 
+export HALSIM_EXTENSIONS="libhalsim_ds_socket.so:libhalsim_gui.so" 
 export LD_LIBRARY_PATH="src:$HOME/wpilib/2025/luabot/lib/linuxx86-64:stage/lib/x86_64-linux-gnu"
 
 export LUA_PATH="stage/share/luajit-2.1/?.lua;subprojects/luabot/bindings/lua/?.lua;stage/share/lua/5.1/?.lua;$SRCROOT/robot/?.lua"

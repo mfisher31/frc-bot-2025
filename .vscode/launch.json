@@ -14,7 +14,7 @@
       "cwd": "${workspaceFolder}/build/stage",
       "environment": [
         { "name": "HALSIM_EXTENSIONS", "value": "halsim_gui" },
-        { "name": "LD_LIBRARY_PATH", "value": "${workspaceFolder}/src:~/wpilib/2025/luabot/lib/linuxx86-64:${workspaceFolder}/build/stage/lib/x86_64-linux-gnu" },
+        { "name": "LD_LIBRARY_PATH", "value": "${workspaceFolder}/build/src:/home/mfisher/wpilib/2025/luabot/lib/linuxx86-64:${workspaceFolder}/build/stage/lib/x86_64-linux-gnu" },
         { "name": "LUA_CPATH", "value": "${workspaceFolder}/build/stage/lib/lua/5.1/?.so" },
         { "name": "LUA_PATH", "value": "${workspaceFolder}/build/subprojects/luabot/bindings/lua/?.lua;${workspaceFolder}/robot/?.lua;${workspaceFolder}/build/stage/share/luajit-2.1/?.lua;${workspaceFolder}/build/stage/share/lua/5.1/?.lua" }
       ],

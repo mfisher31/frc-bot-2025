@@ -8,7 +8,6 @@
 
 RobotContainer::RobotContainer()
 {
-    ConfigureBindings();
 }
 
 void RobotContainer::ConfigureBindings()

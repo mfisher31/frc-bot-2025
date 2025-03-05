@@ -3,6 +3,7 @@ local ffi = require ('ffi')
 ffi.cdef[[
 typedef struct cRobotContainer cRobotContainer;
 cRobotContainer* cRobotContainerNew();
+void cRobotContainerConfigureBindings (cRobotContainer* self);
 ]]
 
 ---RobotContainer wrapper
@@ -14,6 +15,10 @@ local RobotContainer_mt = {
 
 function RobotContainer.new()
     return ffi.C.cRobotContainerNew()
+end
+
+function RobotContainer:configureBindings()
+    ffi.C.cRobotContainerConfigureBindings (self)
 end
 
 ffi.metatype ('cRobotContainer', RobotContainer_mt)
