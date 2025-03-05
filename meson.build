@@ -1,6 +1,6 @@
 project ('frc-bot-2025', ['cpp', 'c'], 
     version : '0.0.1',
-    meson_version : '>= 1.4.0',
+    meson_version : '>= 1.3.2',
     license : 'BSD',
     default_options: [
         'b_ndebug=if-release',
