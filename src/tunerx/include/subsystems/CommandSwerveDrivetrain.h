@@ -24,9 +24,9 @@ class CommandSwerveDrivetrain : public frc2::SubsystemBase, public TunerSwerveDr
     units::second_t m_lastSimTime;
 
     /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
-    static constexpr frc::Rotation2d kBlueAlliancePerspectiveRotation{0_deg};
+    static constexpr frc::Rotation2d kBlueAlliancePerspectiveRotation { 0_deg };
     /* Red alliance sees forward as 180 degrees (toward blue alliance wall) */
-    static constexpr frc::Rotation2d kRedAlliancePerspectiveRotation{180_deg};
+    static constexpr frc::Rotation2d kRedAlliancePerspectiveRotation { 180_deg };
     /* Keep track if we've ever applied the operator perspective before or not */
     bool m_hasAppliedOperatorPerspective = false;
 
@@ -36,41 +36,35 @@ class CommandSwerveDrivetrain : public frc2::SubsystemBase, public TunerSwerveDr
     swerve::requests::SysIdSwerveRotation m_rotationCharacterization;
 
     /* SysId routine for characterizing translation. This is used to find PID gains for the drive motors. */
-    frc2::sysid::SysIdRoutine m_sysIdRoutineTranslation{
-        frc2::sysid::Config{
+    frc2::sysid::SysIdRoutine m_sysIdRoutineTranslation {
+        frc2::sysid::Config {
             std::nullopt, // Use default ramp rate (1 V/s)
             4_V,          // Reduce dynamic step voltage to 4 V to prevent brownout
             std::nullopt, // Use default timeout (10 s)
             // Log state with SignalLogger class
-            [](frc::sysid::State state)
-            {
-                SignalLogger::WriteString("SysIdTranslation_State", frc::sysid::SysIdRoutineLog::StateEnumToString(state));
-            }
-        },
-        frc2::sysid::Mechanism{
-            [this](units::volt_t output) { SetControl(m_translationCharacterization.WithVolts(output)); },
+            [] (frc::sysid::State state) {
+                SignalLogger::WriteString ("SysIdTranslation_State", frc::sysid::SysIdRoutineLog::StateEnumToString (state));
+            } },
+        frc2::sysid::Mechanism {
+            [this] (units::volt_t output) { SetControl (m_translationCharacterization.WithVolts (output)); },
             {},
-            this
-        }
+            this }
     };
 
     /* SysId routine for characterizing steer. This is used to find PID gains for the steer motors. */
-    frc2::sysid::SysIdRoutine m_sysIdRoutineSteer{
-        frc2::sysid::Config{
+    frc2::sysid::SysIdRoutine m_sysIdRoutineSteer {
+        frc2::sysid::Config {
             std::nullopt, // Use default ramp rate (1 V/s)
             7_V,          // Use dynamic voltage of 7 V
             std::nullopt, // Use default timeout (10 s)
             // Log state with SignalLogger class
-            [](frc::sysid::State state)
-            {
-                SignalLogger::WriteString("SysIdSteer_State", frc::sysid::SysIdRoutineLog::StateEnumToString(state));
-            }
-        },
-        frc2::sysid::Mechanism{
-            [this](units::volt_t output) { SetControl(m_steerCharacterization.WithVolts(output)); },
+            [] (frc::sysid::State state) {
+                SignalLogger::WriteString ("SysIdSteer_State", frc::sysid::SysIdRoutineLog::StateEnumToString (state));
+            } },
+        frc2::sysid::Mechanism {
+            [this] (units::volt_t output) { SetControl (m_steerCharacterization.WithVolts (output)); },
             {},
-            this
-        }
+            this }
     };
 
     /*
@@ -78,34 +72,30 @@ class CommandSwerveDrivetrain : public frc2::SubsystemBase, public TunerSwerveDr
      * This is used to find PID gains for the FieldCentricFacingAngle HeadingController.
      * See the documentation of swerve::requests::SysIdSwerveRotation for info on importing the log to SysId.
      */
-    frc2::sysid::SysIdRoutine m_sysIdRoutineRotation{
-        frc2::sysid::Config{
+    frc2::sysid::SysIdRoutine m_sysIdRoutineRotation {
+        frc2::sysid::Config {
             /* This is in radians per second², but SysId only supports "volts per second" */
             units::constants::detail::PI_VAL / 6 * (1_V / 1_s),
             /* This is in radians per second, but SysId only supports "volts" */
             units::constants::detail::PI_VAL * 1_V,
             std::nullopt, // Use default timeout (10 s)
             // Log state with SignalLogger class
-            [](frc::sysid::State state)
-            {
-                SignalLogger::WriteString("SysIdRotation_State", frc::sysid::SysIdRoutineLog::StateEnumToString(state));
-            }
-        },
-        frc2::sysid::Mechanism{
-            [this](units::volt_t output)
-            {
+            [] (frc::sysid::State state) {
+                SignalLogger::WriteString ("SysIdRotation_State", frc::sysid::SysIdRoutineLog::StateEnumToString (state));
+            } },
+        frc2::sysid::Mechanism {
+            [this] (units::volt_t output) {
                 /* output is actually radians per second, but SysId only supports "volts" */
-                SetControl(m_rotationCharacterization.WithRotationalRate(output * (1_rad_per_s / 1_V)));
+                SetControl (m_rotationCharacterization.WithRotationalRate (output * (1_rad_per_s / 1_V)));
                 /* also log the requested output for SysId */
-                SignalLogger::WriteValue("Rotational_Rate", output * (1_rad_per_s / 1_V));
+                SignalLogger::WriteValue ("Rotational_Rate", output * (1_rad_per_s / 1_V));
             },
             {},
-            this
-        }
+            this }
     };
 
     /* The SysId routine to test */
-    frc2::sysid::SysIdRoutine *m_sysIdRoutineToApply = &m_sysIdRoutineTranslation;
+    frc2::sysid::SysIdRoutine* m_sysIdRoutineToApply = &m_sysIdRoutineTranslation;
 
 public:
     /**
@@ -119,9 +109,7 @@ public:
      * \param modules             Constants for each specific module
      */
     template <std::same_as<SwerveModuleConstants>... ModuleConstants>
-    CommandSwerveDrivetrain(swerve::SwerveDrivetrainConstants const &driveTrainConstants, ModuleConstants const &... modules) :
-        TunerSwerveDrivetrain{driveTrainConstants, modules...}
-    {
+    CommandSwerveDrivetrain (swerve::SwerveDrivetrainConstants const& driveTrainConstants, ModuleConstants const&... modules) : TunerSwerveDrivetrain { driveTrainConstants, modules... } {
         if (utils::IsSimulation()) {
             StartSimThread();
         }
@@ -141,13 +129,10 @@ public:
      * \param modules                    Constants for each specific module
      */
     template <std::same_as<SwerveModuleConstants>... ModuleConstants>
-    CommandSwerveDrivetrain(
-        swerve::SwerveDrivetrainConstants const &driveTrainConstants,
+    CommandSwerveDrivetrain (
+        swerve::SwerveDrivetrainConstants const& driveTrainConstants,
         units::hertz_t odometryUpdateFrequency,
-        ModuleConstants const &... modules
-    ) :
-        TunerSwerveDrivetrain{driveTrainConstants, odometryUpdateFrequency, modules...}
-    {
+        ModuleConstants const&... modules) : TunerSwerveDrivetrain { driveTrainConstants, odometryUpdateFrequency, modules... } {
         if (utils::IsSimulation()) {
             StartSimThread();
         }
@@ -169,18 +154,14 @@ public:
      * \param modules                    Constants for each specific module
      */
     template <std::same_as<SwerveModuleConstants>... ModuleConstants>
-    CommandSwerveDrivetrain(
-        swerve::SwerveDrivetrainConstants const &driveTrainConstants,
+    CommandSwerveDrivetrain (
+        swerve::SwerveDrivetrainConstants const& driveTrainConstants,
         units::hertz_t odometryUpdateFrequency,
-        std::array<double, 3> const &odometryStandardDeviation,
-        std::array<double, 3> const &visionStandardDeviation,
-        ModuleConstants const &... modules
-    ) :
-        TunerSwerveDrivetrain{
-            driveTrainConstants, odometryUpdateFrequency,
-            odometryStandardDeviation, visionStandardDeviation, modules...
-        }
-    {
+        std::array<double, 3> const& odometryStandardDeviation,
+        std::array<double, 3> const& visionStandardDeviation,
+        ModuleConstants const&... modules) : TunerSwerveDrivetrain {
+                                                 driveTrainConstants, odometryUpdateFrequency, odometryStandardDeviation, visionStandardDeviation, modules...
+                                             } {
         if (utils::IsSimulation()) {
             StartSimThread();
         }
@@ -197,12 +178,11 @@ public:
      * \returns Command to run
      */
     template <typename RequestSupplier>
-        requires std::is_lvalue_reference_v<std::invoke_result_t<RequestSupplier>> &&
-            requires(RequestSupplier req, TunerSwerveDrivetrain &drive) { drive.SetControl(req()); }
-    frc2::CommandPtr ApplyRequest(RequestSupplier request)
-    {
-        return Run([this, request=std::move(request)] {
-            return SetControl(request());
+    requires std::is_lvalue_reference_v<std::invoke_result_t<RequestSupplier>>&&
+        requires (RequestSupplier req, TunerSwerveDrivetrain& drive) { drive.SetControl (req()); }
+    frc2::CommandPtr ApplyRequest (RequestSupplier request) {
+        return Run ([this, request = std::move (request)] {
+            return SetControl (request());
         });
     }
 
@@ -213,12 +193,11 @@ public:
      * \returns Command to run
      */
     template <typename RequestSupplier>
-        requires std::is_rvalue_reference_v<std::invoke_result_t<RequestSupplier>> &&
-            requires(RequestSupplier req, TunerSwerveDrivetrain &drive) { drive.SetControl(req()); }
-    frc2::CommandPtr ApplyRequest(RequestSupplier request)
-    {
-        return Run([this, request=std::move(request)] {
-            return SetControl(request());
+    requires std::is_rvalue_reference_v<std::invoke_result_t<RequestSupplier>>&&
+        requires (RequestSupplier req, TunerSwerveDrivetrain& drive) { drive.SetControl (req()); }
+    frc2::CommandPtr ApplyRequest (RequestSupplier request) {
+        return Run ([this, request = std::move (request)] {
+            return SetControl (request());
         });
     }
 
@@ -231,9 +210,8 @@ public:
      * \param direction Direction of the SysId Quasistatic test
      * \returns Command to run
      */
-    frc2::CommandPtr SysIdQuasistatic(frc2::sysid::Direction direction)
-    {
-        return m_sysIdRoutineToApply->Quasistatic(direction);
+    frc2::CommandPtr SysIdQuasistatic (frc2::sysid::Direction direction) {
+        return m_sysIdRoutineToApply->Quasistatic (direction);
     }
 
     /**
@@ -243,9 +221,8 @@ public:
      * \param direction Direction of the SysId Dynamic test
      * \returns Command to run
      */
-    frc2::CommandPtr SysIdDynamic(frc2::sysid::Direction direction)
-    {
-        return m_sysIdRoutineToApply->Dynamic(direction);
+    frc2::CommandPtr SysIdDynamic (frc2::sysid::Direction direction) {
+        return m_sysIdRoutineToApply->Dynamic (direction);
     }
 
     /**
@@ -255,9 +232,8 @@ public:
      * \param visionRobotPose The pose of the robot as measured by the vision camera.
      * \param timestamp The timestamp of the vision measurement in seconds.
      */
-    void AddVisionMeasurement(frc::Pose2d visionRobotPose, units::second_t timestamp) override
-    {
-        TunerSwerveDrivetrain::AddVisionMeasurement(std::move(visionRobotPose), utils::FPGAToCurrentTime(timestamp));
+    void AddVisionMeasurement (frc::Pose2d visionRobotPose, units::second_t timestamp) override {
+        TunerSwerveDrivetrain::AddVisionMeasurement (std::move (visionRobotPose), utils::FPGAToCurrentTime (timestamp));
     }
 
     /**
@@ -272,16 +248,15 @@ public:
      * \param timestamp The timestamp of the vision measurement in seconds.
      * \param visionMeasurementStdDevs Standard deviations of the vision pose measurement.
      */
-    void AddVisionMeasurement(
+    void AddVisionMeasurement (
         frc::Pose2d visionRobotPose,
         units::second_t timestamp,
-        std::array<double, 3> visionMeasurementStdDevs) override
-    {
-        TunerSwerveDrivetrain::AddVisionMeasurement(std::move(visionRobotPose), utils::FPGAToCurrentTime(timestamp), visionMeasurementStdDevs);
+        std::array<double, 3> visionMeasurementStdDevs) override {
+        TunerSwerveDrivetrain::AddVisionMeasurement (std::move (visionRobotPose), utils::FPGAToCurrentTime (timestamp), visionMeasurementStdDevs);
     }
 
 private:
     void StartSimThread();
 };
 
-}
+} // namespace subsystems
