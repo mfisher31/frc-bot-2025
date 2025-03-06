@@ -31,7 +31,6 @@ class RobotContainer:
     """
 
     def __init__(self) -> None:
-        
         self._max_speed = (
             TunerConstants.speed_at_12_volts * .6
         )  # speed_at_12_volts desired top speed
@@ -39,6 +38,9 @@ class RobotContainer:
             0.75 * .5
             #maybe limit this rotational
         )  # 3/4 of a rotation per second max angular velocity
+
+        # Drive Inversion multiplier
+        self._driveMultiplier = -1.0
 
         # Setting up bindings for necessary control of the swerve drive platform
         self._drive = (
@@ -63,19 +65,19 @@ class RobotContainer:
         # Initialize the intake with motor IDs
         self.intake = Lifter(18, 22)
 
-        self.configureButtonBindings()
+        # Setup telemetry
+        self._registerTelemetery()
 
     def configureButtonBindings(self) -> None:
         """
-        Use this method to define your button->command mappings. Buttons can be created by
-        instantiating a :GenericHID or one of its subclasses (Joystick or XboxController),
-        and then passing it to a JoystickButton.
+        Setup which buttons do what.
         """
-        if hasattr(self, '_joystick') and self._joystick is not None:
-            return
+        if not hasattr (self, '_joystick') or self._joystick == None:
+            self._joystick = commands2.button.CommandXboxController (0)
 
-        self._joystick = commands2.button.CommandXboxController(0)
-
+        # Cache the multiplier
+        self._driveMultiplier = -1.0 if self.isRedAlliance() else 1.0
+        
         # Note that X is defined as forward according to WPILib convention,
         # and Y is defined as to the left according to WPILib convention.
         self.drivetrain.setDefaultCommand(
@@ -83,13 +85,13 @@ class RobotContainer:
             self.drivetrain.apply_request(
                 lambda: (
                     self._drive.with_velocity_x(
-                        -self._joystick.getLeftY() * self._max_speed
+                        self._driveMultiplier * self._joystick.getLeftY() * self._max_speed
                     )  # Drive forward with negative Y (forward)
                     .with_velocity_y(
-                        -self._joystick.getLeftX() * self._max_speed
+                        self._driveMultiplier * self._joystick.getLeftX() * self._max_speed
                     )  # Drive left with negative X (left)
                     .with_rotational_rate(
-                        -self._joystick.getRightX() * self._max_angular_rate
+                        self._driveMultiplier * self._joystick.getRightX() * self._max_angular_rate
                     )  # Drive counterclockwise with negative X (left)
                 )
             )
@@ -97,7 +99,7 @@ class RobotContainer:
         
         # reset the field-centric heading on left bumper press
         self._joystick.x().onTrue(
-            self.drivetrain.runOnce(lambda: self.drivetrain.seed_field_centric())
+            self.drivetrain.runOnce(lambda: self.resetHeading())
         )
        
         # Configure buttons for elevator control
@@ -136,6 +138,13 @@ class RobotContainer:
             lambda: self.intake.stop()
         ))
 
+        # Theres a chance red vs blue has changed, so do this now.
+        self.resetHeading()
+
+    def resetHeading(self):
+        self.drivetrain.seed_field_centric()
+    
+    def _registerTelemetery (self):
         self.drivetrain.register_telemetry(
             lambda state: self._logger.telemeterize(state)
         )
@@ -145,7 +154,10 @@ class RobotContainer:
 
         :returns: the command to run in autonomous
         """
-        return AutonomousCommand(self.drivetrain, self.intake, selected_traj_file, is_red_alliance=self.is_red_alliance())
+        return AutonomousCommand(self.drivetrain, 
+                                 self.intake, 
+                                 selected_traj_file, 
+                                 is_red_alliance=self.isRedAlliance())
     
-    def is_red_alliance(self):
+    def isRedAlliance(self):
         return wpilib.DriverStation.getAlliance() == wpilib.DriverStation.Alliance.kRed
