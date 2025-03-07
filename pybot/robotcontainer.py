@@ -17,6 +17,9 @@ from lifter import Lifter  # Import the Lifter class
 import wpilib
 from autolink import AutonomousCommand
 import logging
+import math
+from wpimath.controller import PIDController
+from wpimath.kinematics import ChassisSpeeds
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -32,10 +35,10 @@ class RobotContainer:
 
     def __init__(self) -> None:
         self._max_speed = (
-            TunerConstants.speed_at_12_volts * .6
+            TunerConstants.speed_at_12_volts * .72
         )  # speed_at_12_volts desired top speed
         self._max_angular_rate = rotationsToRadians(
-            0.75 * .4
+            0.75 * .35
             #maybe limit this rotational
         )  # 3/4 of a rotation per second max angular velocity
 
@@ -64,6 +67,22 @@ class RobotContainer:
         self.elevator = Lifter(20, 16)
         # Initialize the intake with motor IDs
         self.intake = Lifter(18, 22)
+        # making it closer to 1 will make the decay slower and smoother.
+
+        # Initialize PID controllers for smoothing
+        self._pid_x = PIDController(1.1, 0.0, 0.0)
+        self._pid_y = PIDController(1.1, 0.0, 0.0)
+        self._pid_rot = PIDController(1.6, 0.0, 0.0)
+
+        # Configure PID controllers
+        self._pid_x.setTolerance(0.01)
+        self._pid_y.setTolerance(0.01)
+        self._pid_rot.setTolerance(0.01)
+
+        # Setpoint initialization
+        self._pid_x.setSetpoint(0)
+        self._pid_y.setSetpoint(0)
+        self._pid_rot.setSetpoint(0)
 
         # Setup telemetry
         self._registerTelemetery()
@@ -72,12 +91,14 @@ class RobotContainer:
         """
         Setup which buttons do what.
         """
-        if not hasattr (self, '_joystick') or self._joystick == None:
-            self._joystick = commands2.button.CommandXboxController (0)
+        if not hasattr(self, '_joystick') or self._joystick is None:
+            self._joystick = commands2.button.CommandXboxController(0)
 
         # Cache the multiplier
         self._driveMultiplier = -1.0 if self.isRedAlliance() else 1.0
-        
+
+        print(f"Current Speeds: {self.drivetrain.get_chassis_speed()}")
+
         # Note that X is defined as forward according to WPILib convention,
         # and Y is defined as to the left according to WPILib convention.
         self.drivetrain.setDefaultCommand(
@@ -85,61 +106,44 @@ class RobotContainer:
             self.drivetrain.apply_request(
                 lambda: (
                     self._drive.with_velocity_x(
-                        self._driveMultiplier * self._joystick.getLeftY() * self._max_speed
-                    )  # Drive forward with negative Y (forward)
+                        self._driveMultiplier * self._smooth_input(self._joystick.getLeftY(), self.drivetrain.get_chassis_speed().vx, 'x') * self._max_speed
+                    )  # Drive forward with negative Y (forward) and left trigger for acceleration
                     .with_velocity_y(
-                        self._driveMultiplier * self._joystick.getLeftX() * self._max_speed
-                    )  # Drive left with negative X (left)
+                        self._driveMultiplier * self._smooth_input(self._joystick.getLeftX(), self.drivetrain.get_chassis_speed().vy, 'y') * self._max_speed
+                    )  # Drive left with negative X (left) and left trigger for acceleration
                     .with_rotational_rate(
-                        self._driveMultiplier * self._joystick.getRightX() * self._max_angular_rate
+                        self._driveMultiplier * self._smooth_input(self._joystick.getRightX(), self.drivetrain.get_chassis_speed().omega, 'rot') * self._max_angular_rate
                     )  # Drive counterclockwise with negative X (left)
                 )
             )
         )
-        
+
+
         # reset the field-centric heading on left bumper press
         self._joystick.x().onTrue(
             self.drivetrain.runOnce(lambda: self.resetHeading())
         )
-       
+
         # Configure buttons for elevator control
         self._joystick.y().whileTrue(commands2.cmd.startEnd(
-           lambda: self.elevator.moveUp(),
-           lambda: self.elevator.stop()
+            lambda: self.elevator.moveUp(),
+            lambda: self.elevator.stop()
         ))
 
         self._joystick.a().whileTrue(commands2.cmd.startEnd(
-           lambda: self.elevator.moveDown(),
-           lambda: self.elevator.stop()
+            lambda: self.elevator.moveDown(),
+            lambda: self.elevator.stop()
         ))
-    
-        
+
         self._joystick.rightTrigger().onTrue(commands2.cmd.runOnce(self.elevator.stop, self.elevator))
-
-        # Set the rumble when the 'X' button is pressed
-        #self._joystick.x().whileTrue(commands2.cmd.startEnd(
-        #    lambda: self._joystick.setRumble(wpilib.interfaces.GenericHID.RumbleType.kBothRumble, 1),
-        #    lambda: self._joystick.setRumble(wpilib.interfaces.GenericHID.RumbleType.kBothRumble, 0)
-        #))
-        #if wpilib.DriverStation.isTeleop() and wpilib.DriverStation.getMatchTime() <= 15:
-        #    commands2.cmd.run(
-        #    lambda: self._joystick.setRumble(wpilib.interfaces.GenericHID.RumbleType.kRightRumble, 1),
-        #    lambda: self._joystick.setRumble(wpilib.interfaces.GenericHID.RumbleType.kRightRumble, 0),
-        #    lambda: self._joystick.setRumble(wpilib.interfaces.GenericHID.RumbleType.kLeftRumble, 1),
-        #    lambda: self._joystick.setRumble(wpilib.interfaces.GenericHID.RumbleType.kLeftRumble, 0)
-        #)
-
-        # Log elevator positions when the 'B' button is pressed
-        #self._joystick.b().whileTrue(commands2.cmd.run(lambda: logging.info(self.elevator.get_positions()), self.elevator))
 
         # Configure buttons for intake control
         self._joystick.rightBumper().whileTrue(commands2.cmd.startEnd(
-            lambda: self.intake.setMotor(1),
+            lambda: self.intake.setMotor(.8),
             lambda: self.intake.stop()
         ))
 
         # Theres a chance red vs blue has changed, so do this now.
-        self.resetHeading()
 
     def resetHeading(self):
         self.drivetrain.seed_field_centric()
@@ -161,3 +165,15 @@ class RobotContainer:
     
     def isRedAlliance(self):
         return wpilib.DriverStation.getAlliance() == wpilib.DriverStation.Alliance.kRed
+
+    def _smooth_input(self, set_point, chassis_speeds, axis):
+        if abs(set_point) <= 0.1:
+            smoothed_value = 0
+        elif axis == 'x':
+            smoothed_value = self._pid_x.calculate(set_point, chassis_speeds)
+        elif axis == 'y':
+            smoothed_value = self._pid_y.calculate(set_point, chassis_speeds)
+        elif axis == 'rot':
+            smoothed_value = self._pid_rot.calculate(set_point, chassis_speeds)
+
+        return smoothed_value
