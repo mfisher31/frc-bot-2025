@@ -70,8 +70,8 @@ class RobotContainer:
         # making it closer to 1 will make the decay slower and smoother.
 
         # Initialize PID controllers for smoothing
-        self._pid_x = PIDController(1.1, 0.0, 0.0)
-        self._pid_y = PIDController(1.1, 0.0, 0.0)
+        self._pid_x = PIDController(1.005, 0.0, 0.0)
+        self._pid_y = PIDController(1.005, 0.0, 0.0)
         self._pid_rot = PIDController(1.6, 0.0, 0.0)
 
         # Configure PID controllers
@@ -97,8 +97,6 @@ class RobotContainer:
         # Cache the multiplier
         self._driveMultiplier = -1.0 if self.isRedAlliance() else 1.0
 
-        print(f"Current Speeds: {self.drivetrain.get_chassis_speed()}")
-
         # Note that X is defined as forward according to WPILib convention,
         # and Y is defined as to the left according to WPILib convention.
         self.drivetrain.setDefaultCommand(
@@ -106,19 +104,19 @@ class RobotContainer:
             self.drivetrain.apply_request(
                 lambda: (
                     self._drive.with_velocity_x(
-                        self._driveMultiplier * self._smooth_input(self._joystick.getLeftY(), self.drivetrain.get_chassis_speed().vx, 'x') * self._max_speed
+                        self._driveMultiplier * self._smooth_input(self._joystick.getLeftX() * self._max_speed, self.drivetrain.get_chassis_speed().vx, 'x') 
                     )  # Drive forward with negative Y (forward) and left trigger for acceleration
                     .with_velocity_y(
-                        self._driveMultiplier * self._smooth_input(self._joystick.getLeftX(), self.drivetrain.get_chassis_speed().vy, 'y') * self._max_speed
+                        self._driveMultiplier * self._smooth_input(self._joystick.getLeftY() * self._max_speed, self.drivetrain.get_chassis_speed().vy, 'y') 
                     )  # Drive left with negative X (left) and left trigger for acceleration
                     .with_rotational_rate(
-                        self._driveMultiplier * self._smooth_input(self._joystick.getRightX(), self.drivetrain.get_chassis_speed().omega, 'rot') * self._max_angular_rate
+                        self._driveMultiplier * self._smooth_input(self._joystick.getRightX() * self._max_angular_rate, self.drivetrain.get_chassis_speed().omega, 'rot') 
                     )  # Drive counterclockwise with negative X (left)
                 )
             )
         )
 
-
+        print(f"Post Speeds: {self.drivetrain.get_chassis_speed()}")
         # reset the field-centric heading on left bumper press
         self._joystick.x().onTrue(
             self.drivetrain.runOnce(lambda: self.resetHeading())
@@ -167,13 +165,15 @@ class RobotContainer:
         return wpilib.DriverStation.getAlliance() == wpilib.DriverStation.Alliance.kRed
 
     def _smooth_input(self, set_point, chassis_speeds, axis):
+        print(f"Pre Speeds: {self.drivetrain.get_chassis_speed()}")
         if abs(set_point) <= 0.1:
             smoothed_value = 0
         elif axis == 'x':
-            smoothed_value = self._pid_x.calculate(set_point, chassis_speeds)
+            smoothed_value = self._pid_x.calculate(chassis_speeds, set_point)
         elif axis == 'y':
-            smoothed_value = self._pid_y.calculate(set_point, chassis_speeds)
+            smoothed_value = self._pid_y.calculate(chassis_speeds, set_point)
         elif axis == 'rot':
-            smoothed_value = self._pid_rot.calculate(set_point, chassis_speeds)
+            smoothed_value = self._pid_rot.calculate(chassis_speeds, set_point)
 
+        print(f"Corrections of {axis}: {smoothed_value}")
         return smoothed_value
