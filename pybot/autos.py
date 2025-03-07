@@ -2,7 +2,7 @@ import commands2
 import wpilib
 import choreo
 
-class AutonomousCommand(commands2.Command):
+class FollowTrajectory(commands2.Command):
     def __init__(self, drivetrain, intake, traj, is_red_alliance):
         """
         Initializes the AutonomousCommand.
