@@ -15,7 +15,6 @@ from phoenix6 import swerve, SignalLogger
 from wpimath.units import rotationsToRadians
 from lifter import Lifter  # Import the Lifter class
 import wpilib
-from autolink import AutonomousCommand
 import logging
 
 # Configure logging
@@ -128,49 +127,45 @@ class RobotContainer:
 
     def resetHeading(self):
         self.drivetrain.seed_field_centric()
+
+    def getAutonomousCommand(self, selected: str) -> commands2.Command:
+        from autos import FollowTrajectory
+        return FollowTrajectory (self.drivetrain,
+                                 self.intake,
+                                 selected,
+                                 is_red_alliance = self.isRedAlliance())
+    
+    def isRedAlliance(self):
+        return wpilib.DriverStation.getAlliance() == wpilib.DriverStation.Alliance.kRed
     
     def _registerTelemetery (self):
         self.drivetrain.register_telemetry(
             lambda state: self._logger.telemeterize(state)
-        )
 
-    def getAutonomousCommand(self, selected_traj_file: str) -> commands2.Command:
-        """Use this to pass the autonomous command to the main {@link Robot} class.
-
-        :returns: the command to run in autonomous
+    def apply_exponential(input: float, deadband: float, exponent: float) -> float:
         """
-        return AutonomousCommand(self.drivetrain, 
-                                 self.intake, 
-                                 selected_traj_file, 
-                                 is_red_alliance=self.isRedAlliance())
-    
-    def isRedAlliance(self):
-        return wpilib.DriverStation.getAlliance() == wpilib.DriverStation.Alliance.kRed
+        Apply an exponential response curve with a deadband on the input
+        such that the final output goes smoothly from 0 -> ±1 without
+        a deadband in the output.
 
-def apply_exponential(input: float, deadband: float, exponent: float) -> float:
-    """
-    Apply an exponential response curve with a deadband on the input
-    such that the final output goes smoothly from 0 -> ±1 without
-    a deadband in the output.
+        :param input: The raw joystick input in [-1, 1].
+        :param deadband: The input deadband (e.g. 0.1).
+        :param exponent: The exponent for the curve (e.g. 2.0 for a squared curve).
+        :return: A smoothly scaled & exponentiated value in [-1, 1].
+        """
+        # 1. Apply input deadband (stick within ±deadband => output = 0)
+        if abs(input) < deadband:
+            return 0.0
 
-    :param input: The raw joystick input in [-1, 1].
-    :param deadband: The input deadband (e.g. 0.1).
-    :param exponent: The exponent for the curve (e.g. 2.0 for a squared curve).
-    :return: A smoothly scaled & exponentiated value in [-1, 1].
-    """
-    # 1. Apply input deadband (stick within ±deadband => output = 0)
-    if abs(input) < deadband:
-        return 0.0
+        # 2. Preserve sign and work with magnitude
+        sign = 1 if input > 0 else -1
+        magnitude = abs(input)
 
-    # 2. Preserve sign and work with magnitude
-    sign = 1 if input > 0 else -1
-    magnitude = abs(input)
+        # 3. Scale from [deadband .. 1] to [0 .. 1]
+        scaled = (magnitude - deadband) / (1.0 - deadband)  # in [0..1]
 
-    # 3. Scale from [deadband .. 1] to [0 .. 1]
-    scaled = (magnitude - deadband) / (1.0 - deadband)  # in [0..1]
+        # 4. Apply exponential. e.g. exponent=2 => x^2, exponent=3 => x^3
+        curved = scaled ** exponent
 
-    # 4. Apply exponential. e.g. exponent=2 => x^2, exponent=3 => x^3
-    curved = scaled ** exponent
-
-    # 5. Reapply sign to restore forward/backward
-    return sign * curved
+        # 5. Reapply sign to restore forward/backward
+        return sign * curved
