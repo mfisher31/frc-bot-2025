@@ -141,8 +141,9 @@ class RobotContainer:
     def _registerTelemetery (self):
         self.drivetrain.register_telemetry(
             lambda state: self._logger.telemeterize(state)
+        )
 
-    def apply_exponential(input: float, deadband: float, exponent: float) -> float:
+    def apply_exponential(self, input: float, deadband: float, exponent: float) -> float:
         """
         Apply an exponential response curve with a deadband on the input
         such that the final output goes smoothly from 0 -> ±1 without
