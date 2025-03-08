@@ -88,13 +88,13 @@ class RobotContainer:
             self.drivetrain.apply_request(
                 lambda: (
                     self._drive.with_velocity_x(
-                        self._driveMultiplier * apply_exponential(self._joystick.getLeftY(), self._deadband, self._exponent) * self._max_speed
+                        self._driveMultiplier * self.apply_exponential(self._joystick.getLeftY(), self._deadband, self._exponent) * self._max_speed
                     )  # Drive forward with negative Y (forward)
                     .with_velocity_y(
-                        self._driveMultiplier * apply_exponential(self._joystick.getLeftX(), self._deadband, self._exponent) * self._max_speed
+                        self._driveMultiplier * self.apply_exponential(self._joystick.getLeftX(), self._deadband, self._exponent) * self._max_speed
                     )  # Drive left with negative X (left)
                     .with_rotational_rate(
-                        self._driveMultiplier * apply_exponential(self._joystick.getRightX(), self._deadband, self._exponent) * self._max_angular_rate
+                        self._driveMultiplier * self.apply_exponential(self._joystick.getRightX(), self._deadband, self._exponent) * self._max_angular_rate
                     )  # Drive counterclockwise with negative X (left)
                 )
             )
