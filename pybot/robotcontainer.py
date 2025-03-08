@@ -7,19 +7,16 @@
 import commands2
 import commands2.button
 import commands2.cmd
-
+from commands2.sysid import SysIdRoutine
 from generated.tuner_constants import TunerConstants
 from telemetry import Telemetry
 
-from phoenix6 import swerve
+from phoenix6 import swerve, SignalLogger
 from wpimath.units import rotationsToRadians
 from lifter import Lifter  # Import the Lifter class
 import wpilib
 from autolink import AutonomousCommand
 import logging
-import math
-from wpimath.controller import PIDController
-from wpimath.kinematics import ChassisSpeeds
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -46,15 +43,18 @@ class RobotContainer:
         self._driveMultiplier = -1.0
 
         # Setting up bindings for necessary control of the swerve drive platform
+        self._deadband = 0.05 # The input deadband
+        self._exponent = 3.0 # Exponential factor (try 2, 2.5, or 3)
+
         self._drive = (
             swerve.requests.FieldCentric()
-            .with_deadband(self._max_speed * 0.1)
+            .with_deadband(self._max_speed * self._deadband)
             .with_rotational_deadband(
-                self._max_angular_rate * 0.1
-            )  # Add a 10% deadband
+                self._max_angular_rate * self._deadband
+            ) 
             .with_drive_request_type(
-                swerve.SwerveModule.DriveRequestType.OPEN_LOOP_VOLTAGE
-            )  # Use open-loop control for drive motors
+                swerve.SwerveModule.DriveRequestType.VELOCITY
+            )
         )
         self._brake = swerve.requests.SwerveDriveBrake()
         self._point = swerve.requests.PointWheelsAt()
@@ -68,21 +68,6 @@ class RobotContainer:
         # Initialize the intake with motor IDs
         self.intake = Lifter(18, 22)
         # making it closer to 1 will make the decay slower and smoother.
-
-        # Initialize PID controllers for smoothing
-        self._pid_x = PIDController(1.005, 0.0, 0.0)
-        self._pid_y = PIDController(1.005, 0.0, 0.0)
-        self._pid_rot = PIDController(1.6, 0.0, 0.0)
-
-        # Configure PID controllers
-        self._pid_x.setTolerance(0.01)
-        self._pid_y.setTolerance(0.01)
-        self._pid_rot.setTolerance(0.01)
-
-        # Setpoint initialization
-        self._pid_x.setSetpoint(0)
-        self._pid_y.setSetpoint(0)
-        self._pid_rot.setSetpoint(0)
 
         # Setup telemetry
         self._registerTelemetery()
@@ -104,19 +89,17 @@ class RobotContainer:
             self.drivetrain.apply_request(
                 lambda: (
                     self._drive.with_velocity_x(
-                        self._driveMultiplier * self._smooth_input(self._joystick.getLeftX() * self._max_speed, self.drivetrain.get_chassis_speed().vx, 'x') 
-                    )  # Drive forward with negative Y (forward) and left trigger for acceleration
+                        self._driveMultiplier * apply_exponential(self._joystick.getLeftY(), self._deadband, self._exponent) * self._max_speed
+                    )  # Drive forward with negative Y (forward)
                     .with_velocity_y(
-                        self._driveMultiplier * self._smooth_input(self._joystick.getLeftY() * self._max_speed, self.drivetrain.get_chassis_speed().vy, 'y') 
-                    )  # Drive left with negative X (left) and left trigger for acceleration
+                        self._driveMultiplier * apply_exponential(self._joystick.getLeftX(), self._deadband, self._exponent) * self._max_speed
+                    )  # Drive left with negative X (left)
                     .with_rotational_rate(
-                        self._driveMultiplier * self._smooth_input(self._joystick.getRightX() * self._max_angular_rate, self.drivetrain.get_chassis_speed().omega, 'rot') 
+                        self._driveMultiplier * apply_exponential(self._joystick.getRightX(), self._deadband, self._exponent) * self._max_angular_rate
                     )  # Drive counterclockwise with negative X (left)
                 )
             )
         )
-
-        print(f"Post Speeds: {self.drivetrain.get_chassis_speed()}")
         # reset the field-centric heading on left bumper press
         self._joystick.x().onTrue(
             self.drivetrain.runOnce(lambda: self.resetHeading())
@@ -164,16 +147,30 @@ class RobotContainer:
     def isRedAlliance(self):
         return wpilib.DriverStation.getAlliance() == wpilib.DriverStation.Alliance.kRed
 
-    def _smooth_input(self, set_point, chassis_speeds, axis):
-        print(f"Pre Speeds: {self.drivetrain.get_chassis_speed()}")
-        if abs(set_point) <= 0.1:
-            smoothed_value = 0
-        elif axis == 'x':
-            smoothed_value = self._pid_x.calculate(chassis_speeds, set_point)
-        elif axis == 'y':
-            smoothed_value = self._pid_y.calculate(chassis_speeds, set_point)
-        elif axis == 'rot':
-            smoothed_value = self._pid_rot.calculate(chassis_speeds, set_point)
+def apply_exponential(input: float, deadband: float, exponent: float) -> float:
+    """
+    Apply an exponential response curve with a deadband on the input
+    such that the final output goes smoothly from 0 -> ±1 without
+    a deadband in the output.
 
-        print(f"Corrections of {axis}: {smoothed_value}")
-        return smoothed_value
+    :param input: The raw joystick input in [-1, 1].
+    :param deadband: The input deadband (e.g. 0.1).
+    :param exponent: The exponent for the curve (e.g. 2.0 for a squared curve).
+    :return: A smoothly scaled & exponentiated value in [-1, 1].
+    """
+    # 1. Apply input deadband (stick within ±deadband => output = 0)
+    if abs(input) < deadband:
+        return 0.0
+
+    # 2. Preserve sign and work with magnitude
+    sign = 1 if input > 0 else -1
+    magnitude = abs(input)
+
+    # 3. Scale from [deadband .. 1] to [0 .. 1]
+    scaled = (magnitude - deadband) / (1.0 - deadband)  # in [0..1]
+
+    # 4. Apply exponential. e.g. exponent=2 => x^2, exponent=3 => x^3
+    curved = scaled ** exponent
+
+    # 5. Reapply sign to restore forward/backward
+    return sign * curved

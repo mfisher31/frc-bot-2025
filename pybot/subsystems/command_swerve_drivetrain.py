@@ -236,7 +236,7 @@ class CommandSwerveDrivetrain(Subsystem, swerve.SwerveDrivetrain):
         See the documentation of swerve.requests.SysIdSwerveRotation for info on importing the log to SysId.
         """
 
-        self._sys_id_routine_to_apply = self._sys_id_routine_translation
+        self._sys_id_routine_to_apply = self._sys_id_routine_steer
         """The SysId routine to test"""
 
         if utils.is_simulation():
@@ -369,12 +369,3 @@ class CommandSwerveDrivetrain(Subsystem, swerve.SwerveDrivetrain):
             .with_steer_request_type(swerve.swerve_module.SwerveModule.SteerRequestType.POSITION) \
             .with_desaturate_wheel_speeds(True)
         self.set_control(request)
-
-    def get_chassis_speed(self) -> ChassisSpeeds:
-        """
-        Gets the current chassis speeds of the robot.
-
-        :returns: The current chassis speeds of the robot.
-        :rtype: ChassisSpeeds
-        """
-        return super().get_state().speeds
