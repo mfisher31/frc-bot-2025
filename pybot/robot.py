@@ -53,6 +53,7 @@ class MyRobot(wpilib.TimedRobot):
     def teleopInit(self) -> None:
         if self.autonomousCommand:
            self.autonomousCommand.cancel()
+           self.autonomousCommand = None
 
         self.container.configureButtonBindings()
 

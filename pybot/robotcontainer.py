@@ -142,18 +142,18 @@ class RobotContainer:
 
     def resetHeading(self):
         self.drivetrain.seed_field_centric()
+
+    def getAutonomousCommand(self, selected: str) -> commands2.Command:
+        from autos import FollowTrajectory
+        return FollowTrajectory (self.drivetrain,
+                                 self.intake,
+                                 selected,
+                                 is_red_alliance = self.isRedAlliance())
+    
+    def isRedAlliance(self):
+        return wpilib.DriverStation.getAlliance() == wpilib.DriverStation.Alliance.kRed
     
     def _registerTelemetery (self):
         self.drivetrain.register_telemetry(
             lambda state: self._logger.telemeterize(state)
         )
-
-    def getAutonomousCommand(self, selected_traj_file: str) -> commands2.Command:
-        from autos import FollowTrajectory
-        return FollowTrajectory (self.drivetrain, 
-                                 self.intake, 
-                                 selected_traj_file, 
-                                 is_red_alliance = self.isRedAlliance())
-    
-    def isRedAlliance(self):
-        return wpilib.DriverStation.getAlliance() == wpilib.DriverStation.Alliance.kRed
